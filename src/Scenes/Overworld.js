@@ -20,10 +20,16 @@ class Overworld extends Phaser.Scene {
         // First parameter: name we gave the tileset in Tiled
         // Second parameter: key for the tilesheet (from this.load.image in Load.js)
         this.tileset = this.map.addTilesetImage("kenny_tilemap_packed", "tilemap_tiles");
+        this.backgroundTileset = this.map.addTilesetImage("kenny_tilemap_background", "tilemap_background");
 
         // Create a layer
+        this.backGround = this.map.createLayer("Background", this.backgroundTileset, 0, 0);
         this.groundLayer = this.map.createLayer("Ground-n-Platforms", this.tileset, 0, 0);
+        this.foreGround = this.map.createLayer("Foreground", this.tileset, 0, 0);
+
+        this.backGround.setScale(2.0);
         this.groundLayer.setScale(2.0);
+        this.foreGround.setScale(2.0);
 
         // Make it collidable
         this.groundLayer.setCollisionByProperty({
