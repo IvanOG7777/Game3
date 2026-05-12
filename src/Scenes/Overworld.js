@@ -1,6 +1,23 @@
 class Overworld extends Phaser.Scene {
     constructor() {
         super("platformerScene");
+
+        this.playerHealth = 100;
+        this.playerHitDamage = 5;
+
+
+        this.dagerDamage = 10;
+        this.dagerSpeed = 1000; // 1 second hit speed
+
+        this.swordDamage = 20;
+        this.swordSpeed = 2500; // 2.5 second hit speed
+
+        this.axeDamage = 30;
+        this.axeSpeed = 4000; // 4 second hit speed
+
+        this.evilWizardArray = [];
+        this.spiderArray = [];
+        this.orcArray = [];
     }
 
     init() {
@@ -45,6 +62,20 @@ class Overworld extends Phaser.Scene {
         my.sprite.player.setCollideWorldBounds(true);
 
         this.knight = this.physics.add.sprite(200, 200, "knight");
+
+        for (let i = 0; i < 5; i++) {
+            let distanceDiffernece = 20;
+            let wizard = this.physics.add.sprite(100 + distanceDiffernece * i, 100 + distanceDiffernece * i, "evilWizard");
+
+            wizard.setScale(2.55);
+            wizard.setCollideWorldBounds(true);
+            wizard.speed = 80 + distanceDiffernece * i;
+
+            this.physics.add.collider(wizard, this.groundLayer);
+
+            this.evilWizardArray.push(wizard);
+
+        }
         this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
         this.knight.setScale(2.55);
         this.evilWizard.setScale(2.55);
@@ -93,5 +124,21 @@ class Overworld extends Phaser.Scene {
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
         }
+
+        for (let wizard of this.evilWizardArray) {
+            let distanceX = my.sprite.player.x - wizard.x;
+
+        if (Math.abs(distanceX) > 20) {
+            if (distanceX > 0) {
+                wizard.setVelocityX(wizard.speed);
+                wizard.setFlipX(false);
+            } else {
+                wizard.setVelocityX(-wizard.speed);
+                wizard.setFlipX(true);
+            }
+        } else {
+            wizard.setVelocityX(0);
+        } 
+    }
     }
 }
