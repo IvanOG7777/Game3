@@ -5,6 +5,12 @@ class Overworld extends Phaser.Scene {
         this.playerHealth = 100;
         this.playerHitDamage = 5;
 
+        this.evilWizardDamage = 10;
+        this.evilWizardMeleeDistance = 5;
+        this.evilWizardShootDistance = 15;
+        this.evilWizardShootDelay = 3000;
+        this.evilWizardFireballArray = [];
+
 
         this.dagerDamage = 10;
         this.dagerSpeed = 1000; // 1 second hit speed
@@ -62,10 +68,12 @@ class Overworld extends Phaser.Scene {
         my.sprite.player.setCollideWorldBounds(true);
 
         this.knight = this.physics.add.sprite(200, 200, "knight");
+        this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
+        this.orc = this.physics.add.sprite(300, 300, "orc");
 
         for (let i = 0; i < 5; i++) {
             let distanceDiffernece = 20;
-            let wizard = this.physics.add.sprite(100 + distanceDiffernece * i, 100 + distanceDiffernece * i, "evilWizard");
+            let wizard = this.physics.add.sprite(600 + distanceDiffernece * i, 600 + distanceDiffernece * i, "evilWizard");
 
             wizard.setScale(2.55);
             wizard.setCollideWorldBounds(true);
@@ -76,14 +84,15 @@ class Overworld extends Phaser.Scene {
             this.evilWizardArray.push(wizard);
 
         }
-        this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
         this.knight.setScale(2.55);
         this.evilWizard.setScale(2.55);
+        this.orc.setScale(2.55);
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
         this.physics.add.collider(this.knight, this.groundLayer);
         this.physics.add.collider(this.evilWizard, this.groundLayer);
+        this.physics.add.collider(this.orc, this.groundLayer);
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();

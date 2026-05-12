@@ -12,12 +12,12 @@
             "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 355,
-                "y": 290
+                "x": 336,
+                "y": 248
             }
         },
         "platformer-level-1.tmj#kenny_tilemap_background": {
-            "scaleInDock": 0.75
+            "scaleInDock": 1.5
         },
         "platformer-level-1.tmj#kenny_tilemap_dungeon": {
             "scaleInEditor": 1
