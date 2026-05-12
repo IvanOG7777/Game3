@@ -5,10 +5,10 @@ class Overworld extends Phaser.Scene {
 
     init() {
         // variables and settings
-        this.ACCELERATION = 500;
-        this.DRAG = 700;    // DRAG < ACCELERATION = icy slide
+        this.ACCELERATION = 250;
+        this.DRAG = 800;    // DRAG < ACCELERATION = icy slide
         this.physics.world.gravity.y = 1500;
-        this.JUMP_VELOCITY = -900;
+        this.JUMP_VELOCITY = -700;
     }
 
     create() {
@@ -21,15 +21,19 @@ class Overworld extends Phaser.Scene {
         // Second parameter: key for the tilesheet (from this.load.image in Load.js)
         this.tileset = this.map.addTilesetImage("kenny_tilemap_packed", "tilemap_tiles");
         this.backgroundTileset = this.map.addTilesetImage("kenny_tilemap_background", "tilemap_background");
+        this.foreGroundTileset = this.map.addTilesetImage("kenny_tilemap_farm", "tilemap_farm");
 
         // Create a layer
         this.backGround = this.map.createLayer("Background", this.backgroundTileset, 0, 0);
         this.groundLayer = this.map.createLayer("Ground-n-Platforms", this.tileset, 0, 0);
-        this.foreGround = this.map.createLayer("Foreground", this.tileset, 0, 0);
+        this.foreGround = this.map.createLayer("Foreground", this.foreGroundTileset, 0, 0);
 
         this.backGround.setScale(2.0);
         this.groundLayer.setScale(2.0);
         this.foreGround.setScale(2.0);
+
+        
+        this.foreGround.setDepth(1);
 
         // Make it collidable
         this.groundLayer.setCollisionByProperty({
@@ -40,8 +44,15 @@ class Overworld extends Phaser.Scene {
         my.sprite.player = this.physics.add.sprite(game.config.width/4, game.config.height/2, "platformer_characters", "tile_0000.png").setScale(SCALE)
         my.sprite.player.setCollideWorldBounds(true);
 
+        this.knight = this.physics.add.sprite(200, 200, "knight");
+        this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
+        this.knight.setScale(2.55);
+        this.evilWizard.setScale(2.55);
+
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
+        this.physics.add.collider(this.knight, this.groundLayer);
+        this.physics.add.collider(this.evilWizard, this.groundLayer);
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
@@ -56,19 +67,19 @@ class Overworld extends Phaser.Scene {
 
     update() {
         if(cursors.left.isDown) {
-            my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
+            my.sprite.player.body.setVelocityX(-this.ACCELERATION);
             
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
 
         } else if(cursors.right.isDown) {
-            my.sprite.player.body.setAccelerationX(this.ACCELERATION);
+            my.sprite.player.body.setVelocityX(this.ACCELERATION);
 
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
 
         } else {
-            my.sprite.player.body.setAccelerationX(0);
+            my.sprite.player.body.setVelocityX(0);
             my.sprite.player.body.setDragX(this.DRAG);
 
             my.sprite.player.anims.play('idle');
