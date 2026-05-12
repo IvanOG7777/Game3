@@ -6,14 +6,14 @@
     "fileStates": {
         "": {
             "scaleInDock": 1.5,
-            "scaleInEditor": 3
+            "scaleInEditor": 1
         },
         "platformer-level-1.tmj": {
             "scale": 1,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 84,
-                "y": 137.5
+                "x": 355,
+                "y": 290
             }
         },
         "platformer-level-1.tmj#kenny_tilemap_background": {
@@ -21,6 +21,9 @@
         },
         "platformer-level-1.tmj#kenny_tilemap_dungeon": {
             "scaleInEditor": 1
+        },
+        "platformer-level-1.tmj#kenny_tilemap_farm": {
+            "scaleInDock": 1
         },
         "platformer-level-1.tmj#kenny_tilemap_packed": {
             "scaleInDock": 1
