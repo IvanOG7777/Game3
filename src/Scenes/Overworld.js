@@ -1,16 +1,25 @@
+import {
+    moveRandom
+} from "./GameFunctions.js";
+
 class Overworld extends Phaser.Scene {
     constructor() {
         super("platformerScene");
+
+        this.my = {sprite: {}};
+        this.SCALE = 1.75;
 
         this.playerHealth = 100;
         this.playerHitDamage = 5;
 
         this.evilWizardDamage = 10;
-        this.evilWizardMeleeDistance = 5;
+        this.evilWizardMeleeDistance = 20;
+        this.evilWizardFollowDistance = 200;
         this.evilWizardShootDistance = 15;
         this.evilWizardShootDelay = 3000;
         this.evilWizardFireballArray = [];
 
+        this.enemyWanderTime = 2000;
 
         this.dagerDamage = 10;
         this.dagerSpeed = 1000; // 1 second hit speed
@@ -37,6 +46,9 @@ class Overworld extends Phaser.Scene {
     create() {
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 45 tiles wide and 25 tiles tall.
+
+        let my = this.my;
+
         this.map = this.add.tilemap("platformer-level-1", 18, 18, 45, 25);
 
         // Add a tileset to the map
@@ -64,7 +76,7 @@ class Overworld extends Phaser.Scene {
         });
 
         // set up player avatar
-        my.sprite.player = this.physics.add.sprite(game.config.width/4, game.config.height/2, "platformer_characters", "tile_0000.png").setScale(SCALE)
+        my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
         my.sprite.player.setCollideWorldBounds(true);
 
         this.knight = this.physics.add.sprite(200, 200, "knight");
@@ -74,6 +86,11 @@ class Overworld extends Phaser.Scene {
         for (let i = 0; i < 5; i++) {
             let distanceDiffernece = 20;
             let wizard = this.physics.add.sprite(600 + distanceDiffernece * i, 600 + distanceDiffernece * i, "evilWizard");
+            
+            wizard.wanderTimer = this.enemyWanderTime;
+            wizard.wander = false;
+            wizard.chase = false;
+            wizard.shoot = false;
 
             wizard.setScale(2.55);
             wizard.setCollideWorldBounds(true);
@@ -95,7 +112,7 @@ class Overworld extends Phaser.Scene {
         this.physics.add.collider(this.orc, this.groundLayer);
 
         // set up Phaser-provided cursor key input
-        cursors = this.input.keyboard.createCursorKeys();
+         this.cursors = this.input.keyboard.createCursorKeys();
 
         // debug key listener (assigned to D key)
         this.input.keyboard.on('keydown-D', () => {
@@ -106,6 +123,10 @@ class Overworld extends Phaser.Scene {
     }
 
     update() {
+
+        let cursors = this.cursors;
+        let my = this.my;
+
         if(cursors.left.isDown) {
             my.sprite.player.body.setVelocityX(-this.ACCELERATION);
             
@@ -136,18 +157,43 @@ class Overworld extends Phaser.Scene {
 
         for (let wizard of this.evilWizardArray) {
             let distanceX = my.sprite.player.x - wizard.x;
+            let distanceY = my.sprite.player.y - wizard.y;
+            let direction = 1;
 
-        if (Math.abs(distanceX) > 20) {
-            if (distanceX > 0) {
-                wizard.setVelocityX(wizard.speed);
-                wizard.setFlipX(false);
+            let absDistanceX = Math.abs(distanceX);
+            
+            if (absDistanceX <= this.evilWizardMeleeDistance) {
+                wizard.attack = true;
+            } else if (absDistanceX <= this.evilWizardFollowDistance) {
+                wizard.chase = true;
             } else {
-                wizard.setVelocityX(-wizard.speed);
-                wizard.setFlipX(true);
+                wizard.wander = true;
+            } 
+
+            if (wizard.attack == true) {
+                wizard.setVelocityX(0);
+                direction *= -1;
             }
-        } else {
-            wizard.setVelocityX(0);
-        } 
-    }
+
+            if (wizard.chase == true) {
+                if (distanceX > 0) {
+                    wizard.setVelocityX(wizard.speed);
+                    wizard.setFlipX(false);
+                } else {
+                    wizard.setVelocityX(-wizard.speed);
+                    wizard.setFlipX(true);
+                }
+            }
+
+            if (wizard.wander == true) {
+                wizard.setVelocityX(0);
+            }
+            
+            wizard.wander = false;
+            wizard.chase = false;
+            wizard.attack = false;
+        }
     }
 }
+
+export default Overworld;

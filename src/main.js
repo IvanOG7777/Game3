@@ -1,3 +1,6 @@
+import Load from "./Scenes/Load.js";
+import Overworld from "./Scenes/Overworld.js";
+
 "use strict"
 
 // game config
@@ -22,8 +25,6 @@ let config = {
     scene: [Load, Overworld]
 }
 
-var cursors;
-const SCALE = 1.75;
-var my = {sprite: {}, text: {}};
+let my = {sprite: {}, text: {}};
 
 const game = new Phaser.Game(config);
