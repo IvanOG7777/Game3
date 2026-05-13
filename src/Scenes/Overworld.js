@@ -1,7 +1,8 @@
 import {
     moveRandom,
     enemyMovement,
-    moveProjectile
+    moveProjectile,
+    hitEnemy
 } from "./GameFunctions.js";
 
 class Overworld extends Phaser.Scene {
@@ -14,6 +15,8 @@ class Overworld extends Phaser.Scene {
         this.playerHealth = 100;
         this.playerHitDamage = 5;
 
+
+        this.evilWizardHealth = 100;
         this.evilWizardDamage = 10;
         this.evilWizardMeleeDistance = 30; // if player is 10 pixels away melee the player
         this.evilWizardFollowDistance = 150; // if player is within 200 pixels follow
@@ -50,6 +53,8 @@ class Overworld extends Phaser.Scene {
         // 45 tiles wide and 25 tiles tall.
 
         let my = this.my;
+
+        this.hitKey = this.input.keyboard.addKey('space');
 
         this.map = this.add.tilemap("platformer-level-1", 18, 18, 45, 25);
 
@@ -92,11 +97,13 @@ class Overworld extends Phaser.Scene {
         this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
         this.orc = this.physics.add.sprite(300, 300, "orc");
 
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 5; i++) {
             let distanceDiffernece = 20;
             let wizard = this.physics.add.sprite(700 + distanceDiffernece * i, 900 + distanceDiffernece * i, "evilWizard");
             
             wizard.wanderTimer = this.enemyWanderTime;
+            wizard.health = this.evilWizardHealth;
+            wizard.isDead = false;
             wizard.wander = false;
             wizard.chase = false;
             wizard.shoot = false;
@@ -179,8 +186,11 @@ class Overworld extends Phaser.Scene {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
         }
 
+        this.evilWizardArray = hitEnemy(this, this.evilWizardArray);
+
         enemyMovement(this, this.evilWizardArray);
         moveProjectile(this, deltaTime);
+        
     }
 }
 

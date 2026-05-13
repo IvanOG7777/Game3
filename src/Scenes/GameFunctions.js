@@ -93,6 +93,7 @@ function enemyShoot(scene, enemy) {
     let potion = scene.physics.add.sprite(enemy.x, enemy.y, "redPotion");
     potion.setScale(2);
     potion.body.allowGravity = false;
+    potion.isDead = false;
 
     if (playerX > enemy.x) {
         potion.direction = 1;
@@ -115,9 +116,13 @@ function enemyShoot(scene, enemy) {
 function moveProjectile(scene, deltaTime) {
     for (let projectile of scene.evilWizardPotionArray) {
 
-        if(collides (scene.my.player, projectile) == true) {
+        if(collides (scene.my.sprite.player, projectile) == true) {
+            console.log("Player got hit with projectile");
             scene.playerHealth -= 10;
+            scene.health.setText("Health: " + scene.playerHealth);
+            projectile.isDead = true;
             projectile.destroy();
+            continue;
         }
 
         projectile.x += projectile.direction * projectile.velX * (deltaTime / 1000);
@@ -125,6 +130,29 @@ function moveProjectile(scene, deltaTime) {
 
         projectile.velY += 700 * (deltaTime / 1000);
     }
+
+    scene.evilWizardPotionArray = scene.evilWizardPotionArray.filter(projectile => !projectile.isDead);
+}
+
+function hitEnemy(scene, enemyArray) {
+    if (Phaser.Input.Keyboard.JustDown(scene.hitKey)) {
+        for (let enemy of enemyArray) {
+            if (collides(scene.my.sprite.player, enemy) == true) {
+                console.log("Meleeing enemy");
+                enemy.health -= scene.playerHitDamage;
+
+                if (enemy.health <= 0) {
+                    console.log("enemy is dead");
+                    enemy.isDead = true;
+                    enemy.destroy();
+                }
+            }
+        }
+
+        enemyArray = enemyArray.filter(enemy => !enemy.isDead);
+    }
+
+    return enemyArray;
 }
 
 function collides(a, b) {
@@ -138,5 +166,6 @@ export {
     moveRandom,
     enemyMovement,
     enemyShoot,
-    moveProjectile
+    moveProjectile,
+    hitEnemy
 };
