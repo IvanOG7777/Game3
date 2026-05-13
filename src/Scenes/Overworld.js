@@ -1,5 +1,7 @@
 import {
-    moveRandom
+    moveRandom,
+    enemyMovement,
+    moveProjectile
 } from "./GameFunctions.js";
 
 class Overworld extends Phaser.Scene {
@@ -13,13 +15,13 @@ class Overworld extends Phaser.Scene {
         this.playerHitDamage = 5;
 
         this.evilWizardDamage = 10;
-        this.evilWizardMeleeDistance = 20;
-        this.evilWizardFollowDistance = 200;
-        this.evilWizardShootDistance = 15;
+        this.evilWizardMeleeDistance = 30; // if player is 10 pixels away melee the player
+        this.evilWizardFollowDistance = 150; // if player is within 200 pixels follow
+        this.evilWizardShootDistance = 300; // if player is within 250 pixels shoot at them
         this.evilWizardShootDelay = 3000;
-        this.evilWizardFireballArray = [];
+        this.evilWizardPotionArray = [];
 
-        this.enemyWanderTime = 2000;
+        this.enemyWanderTime = 1000;
 
         this.dagerDamage = 10;
         this.dagerSpeed = 1000; // 1 second hit speed
@@ -60,7 +62,10 @@ class Overworld extends Phaser.Scene {
 
         // Create a layer
         this.backGround = this.map.createLayer("Background", this.backgroundTileset, 0, 0);
-        this.groundLayer = this.map.createLayer("Ground-n-Platforms", this.tileset, 0, 0);
+        this.groundLayer = this.map.createLayer(
+            "Ground-n-Platforms",
+            [this.tileset, this.foreGroundTileset], 0, 0
+        )
         this.foreGround = this.map.createLayer("Foreground", this.foreGroundTileset, 0, 0);
 
         this.backGround.setScale(2.0);
@@ -75,6 +80,10 @@ class Overworld extends Phaser.Scene {
             collides: true
         });
 
+        this.foreGround.setCollisionByProperty({
+            collides: true
+        })
+
         // set up player avatar
         my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
         my.sprite.player.setCollideWorldBounds(true);
@@ -83,9 +92,9 @@ class Overworld extends Phaser.Scene {
         this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
         this.orc = this.physics.add.sprite(300, 300, "orc");
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 1; i++) {
             let distanceDiffernece = 20;
-            let wizard = this.physics.add.sprite(600 + distanceDiffernece * i, 600 + distanceDiffernece * i, "evilWizard");
+            let wizard = this.physics.add.sprite(700 + distanceDiffernece * i, 900 + distanceDiffernece * i, "evilWizard");
             
             wizard.wanderTimer = this.enemyWanderTime;
             wizard.wander = false;
@@ -95,6 +104,15 @@ class Overworld extends Phaser.Scene {
             wizard.setScale(2.55);
             wizard.setCollideWorldBounds(true);
             wizard.speed = 80 + distanceDiffernece * i;
+            let direction = Phaser.Math.Between(0,1);
+            if (direction == 0) {
+                wizard.wanderDirection = -1;
+            } else {
+                wizard.wanderDirection = 1;
+            }
+
+            wizard.nextWanderChange = 0;
+            wizard.nextShootTime = 0;
 
             this.physics.add.collider(wizard, this.groundLayer);
 
@@ -120,9 +138,15 @@ class Overworld extends Phaser.Scene {
             this.physics.world.debugGraphic.clear()
         }, this);
 
+        this.health = this.add.text(100, 50, "Health: " + this.playerHealth,
+            {
+                fontSize: "30px",
+                fill: "#fd0000"
+            }).setOrigin(0.5);
+
     }
 
-    update() {
+    update(time, deltaTime) {
 
         let cursors = this.cursors;
         let my = this.my;
@@ -155,44 +179,8 @@ class Overworld extends Phaser.Scene {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
         }
 
-        for (let wizard of this.evilWizardArray) {
-            let distanceX = my.sprite.player.x - wizard.x;
-            let distanceY = my.sprite.player.y - wizard.y;
-            let direction = 1;
-
-            let absDistanceX = Math.abs(distanceX);
-            
-            if (absDistanceX <= this.evilWizardMeleeDistance) {
-                wizard.attack = true;
-            } else if (absDistanceX <= this.evilWizardFollowDistance) {
-                wizard.chase = true;
-            } else {
-                wizard.wander = true;
-            } 
-
-            if (wizard.attack == true) {
-                wizard.setVelocityX(0);
-                direction *= -1;
-            }
-
-            if (wizard.chase == true) {
-                if (distanceX > 0) {
-                    wizard.setVelocityX(wizard.speed);
-                    wizard.setFlipX(false);
-                } else {
-                    wizard.setVelocityX(-wizard.speed);
-                    wizard.setFlipX(true);
-                }
-            }
-
-            if (wizard.wander == true) {
-                wizard.setVelocityX(0);
-            }
-            
-            wizard.wander = false;
-            wizard.chase = false;
-            wizard.attack = false;
-        }
+        enemyMovement(this, this.evilWizardArray);
+        moveProjectile(this, deltaTime);
     }
 }
 
