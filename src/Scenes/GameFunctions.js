@@ -153,8 +153,9 @@ function hitEnemy(scene, enemyArray) {
             }
         }
 
-        enemyArray = enemyArray.filter(enemy => !enemy.isDead);
+        enemyArray = enemyArray.filter(enemy => !enemy.isDead); // filter out dead enemies
 
+        // resetting the stop distances
         let i = 0;
         for (let enemy of enemyArray) {
             enemy.stopDistance = 30 + (i * 50);
