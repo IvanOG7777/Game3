@@ -102,7 +102,7 @@ class Overworld extends Phaser.Scene {
             let distanceDiffernece = 20;
             let wizard = this.physics.add.sprite(700 + distanceDiffernece * i, 900 + distanceDiffernece * i, "evilWizard");
             
-            wizard.stopDistance = distanceDiffernece + (i * 30);
+            wizard.stopDistance = 30 + (i * 50);
             wizard.wanderTimer = this.enemyWanderTime;
             wizard.health = this.evilWizardHealth;
             wizard.isDead = false;
@@ -191,7 +191,7 @@ class Overworld extends Phaser.Scene {
         this.evilWizardArray = hitEnemy(this, this.evilWizardArray);
 
         enemyMovement(this, this.evilWizardArray);
-        seperateEnemies(this.evilWizardArray);
+        // seperateEnemies(this.evilWizardArray);
         moveProjectile(this, deltaTime);
         
     }

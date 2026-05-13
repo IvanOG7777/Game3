@@ -46,12 +46,16 @@ function enemyMovement(scene, enemyArray) {
 
         if (enemy.chase == true) {
             console.log("wizard is chasing");
-            if (distanceX > 0) {
-                enemy.setVelocityX(enemy.speed);
-                enemy.setFlipX(false);
+            if (absDistanceX > enemy.stopDistance) {
+                if (distanceX > 0) {
+                    enemy.setVelocityX(enemy.speed);
+                    enemy.setFlipX(false);
+                } else {
+                    enemy.setVelocityX(-enemy.speed);
+                    enemy.setFlipX(true);
+                }
             } else {
-                enemy.setVelocityX(-enemy.speed);
-                enemy.setFlipX(true);
+                enemy.setVelocityX(0);
             }
         }
 
@@ -156,7 +160,7 @@ function hitEnemy(scene, enemyArray) {
 }
 
 function seperateEnemies(enemyArray) {
-    let pushAmount = 5
+    let pushAmount = 0.5
     for (let enemyA of enemyArray) {
         for (let enemyB of enemyArray) {
             if (enemyA != enemyB) {
