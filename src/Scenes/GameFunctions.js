@@ -155,6 +155,27 @@ function hitEnemy(scene, enemyArray) {
     return enemyArray;
 }
 
+function seperateEnemies(enemyArray) {
+    let pushAmount = 5
+    for (let enemyA of enemyArray) {
+        for (let enemyB of enemyArray) {
+            if (enemyA != enemyB) {
+                let distanceX = Math.abs(enemyA.x - enemyB.x);
+                
+                if (distanceX <= 50) {
+                    if (enemyA.x < enemyB.x) {
+                        enemyA.x -= pushAmount
+                        enemyB.x += pushAmount
+                    } else {
+                        enemyA.x += pushAmount;
+                        enemyB.x -= pushAmount
+                    }
+                }
+            }
+        }
+    }
+}
+
 function collides(a, b) {
         if (Math.abs(a.x - b.x) > (a.displayWidth / 2 + b.displayWidth / 2)) return false;
         if (Math.abs(a.y - b.y) > (a.displayHeight / 2 + b.displayHeight / 2)) return false;
@@ -167,5 +188,6 @@ export {
     enemyMovement,
     enemyShoot,
     moveProjectile,
-    hitEnemy
+    hitEnemy,
+    seperateEnemies
 };

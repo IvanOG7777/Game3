@@ -2,7 +2,8 @@ import {
     moveRandom,
     enemyMovement,
     moveProjectile,
-    hitEnemy
+    hitEnemy,
+    seperateEnemies
 } from "./GameFunctions.js";
 
 class Overworld extends Phaser.Scene {
@@ -101,6 +102,7 @@ class Overworld extends Phaser.Scene {
             let distanceDiffernece = 20;
             let wizard = this.physics.add.sprite(700 + distanceDiffernece * i, 900 + distanceDiffernece * i, "evilWizard");
             
+            wizard.stopDistance = distanceDiffernece + (i * 30);
             wizard.wanderTimer = this.enemyWanderTime;
             wizard.health = this.evilWizardHealth;
             wizard.isDead = false;
@@ -189,6 +191,7 @@ class Overworld extends Phaser.Scene {
         this.evilWizardArray = hitEnemy(this, this.evilWizardArray);
 
         enemyMovement(this, this.evilWizardArray);
+        seperateEnemies(this.evilWizardArray);
         moveProjectile(this, deltaTime);
         
     }
