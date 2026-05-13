@@ -104,7 +104,7 @@ class Overworld extends Phaser.Scene {
             
             wizard.stopDistance = 30 + (i * 50);
             wizard.shootDistance = this.evilWizardShootDistance + (i * 20);
-            wizard.shootDelay = this.evilWizardShootDelay + (i * 200);
+            wizard.shootDelay = this.evilWizardShootDelay + (i * 500);
             wizard.wanderTimer = this.enemyWanderTime;
             wizard.health = this.evilWizardHealth;
             wizard.isDead = false;
