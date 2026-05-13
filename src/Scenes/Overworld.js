@@ -20,7 +20,7 @@ class Overworld extends Phaser.Scene {
         this.evilWizardHealth = 100;
         this.evilWizardDamage = 10;
         this.evilWizardMeleeDistance = 30; // if player is 10 pixels away melee the player
-        this.evilWizardFollowDistance = 150; // if player is within 200 pixels follow
+        this.evilWizardFollowDistance = 275; // if player is within 200 pixels follow
         this.evilWizardShootDistance = 300; // if player is within 250 pixels shoot at them
         this.evilWizardShootDelay = 3000;
         this.evilWizardPotionArray = [];
@@ -103,6 +103,8 @@ class Overworld extends Phaser.Scene {
             let wizard = this.physics.add.sprite(700 + distanceDiffernece * i, 900 + distanceDiffernece * i, "evilWizard");
             
             wizard.stopDistance = 30 + (i * 50);
+            wizard.shootDistance = this.evilWizardShootDistance + (i * 20);
+            wizard.shootDelay = this.evilWizardShootDelay + (i * 200);
             wizard.wanderTimer = this.enemyWanderTime;
             wizard.health = this.evilWizardHealth;
             wizard.isDead = false;

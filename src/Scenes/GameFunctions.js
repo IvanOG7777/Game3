@@ -32,7 +32,7 @@ function enemyMovement(scene, enemyArray) {
             enemy.attack = true;
         } else if (absDistanceX <= scene.evilWizardFollowDistance) {
             enemy.chase = true;
-        } else if (absDistanceX <= scene.evilWizardShootDistance) {
+        } else if (absDistanceX <= enemy.shootDistance) {
             enemy.shoot = true;
         } else {
             enemy.wander = true;
@@ -114,7 +114,7 @@ function enemyShoot(scene, enemy) {
     potion.velX = 350;
 
     scene.evilWizardPotionArray.push(potion);
-    enemy.nextShootTime = currentTime + scene.evilWizardShootDelay;
+    enemy.nextShootTime = currentTime + enemy.shootDelay;
 }
 
 function moveProjectile(scene, deltaTime) {
@@ -159,6 +159,8 @@ function hitEnemy(scene, enemyArray) {
         let i = 0;
         for (let enemy of enemyArray) {
             enemy.stopDistance = 30 + (i * 50);
+            enemy.shootDistance = scene.evilWizardShootDistance + (i * 20);
+            enemy.shootDelay = scene.evilWizardShootDelay + (i * 200);
             i++
         }
     }
