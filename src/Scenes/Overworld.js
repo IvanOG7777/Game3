@@ -67,11 +67,15 @@ class Overworld extends Phaser.Scene {
         this.foreGroundTileset = this.map.addTilesetImage("kenny_tilemap_farm", "tilemap_farm");
 
         // Create a layer
-        this.backGround = this.map.createLayer("Background", this.backgroundTileset, 0, 0);
+        this.backGround = this.map.createLayer("Background",
+            [this.backgroundTileset, this.tileset, this.foreGroundTileset],
+            0, 0);
+        
         this.groundLayer = this.map.createLayer(
             "Ground-n-Platforms",
             [this.tileset, this.foreGroundTileset], 0, 0
         )
+        
         this.foreGround = this.map.createLayer(
             "Foreground",
             [this.tileset, this.foreGroundTileset], 0, 0
