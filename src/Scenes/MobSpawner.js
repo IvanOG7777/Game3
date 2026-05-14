@@ -1,0 +1,1 @@
+// this file will be sort of like levels from gallery shooter where it will hold positions on the map to spawn in enemies

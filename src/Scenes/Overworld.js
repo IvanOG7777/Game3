@@ -57,7 +57,7 @@ class Overworld extends Phaser.Scene {
 
         this.hitKey = this.input.keyboard.addKey('space');
 
-        this.map = this.add.tilemap("platformer-level-1", 18, 18, 45, 25);
+        this.map = this.add.tilemap("platformer-level-1");
 
         // Add a tileset to the map
         // First parameter: name we gave the tileset in Tiled
@@ -72,7 +72,10 @@ class Overworld extends Phaser.Scene {
             "Ground-n-Platforms",
             [this.tileset, this.foreGroundTileset], 0, 0
         )
-        this.foreGround = this.map.createLayer("Foreground", this.foreGroundTileset, 0, 0);
+        this.foreGround = this.map.createLayer(
+            "Foreground",
+            [this.tileset, this.foreGroundTileset], 0, 0
+        )
 
         this.backGround.setScale(2.0);
         this.groundLayer.setScale(2.0);
@@ -93,6 +96,18 @@ class Overworld extends Phaser.Scene {
         // set up player avatar
         my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
         my.sprite.player.setCollideWorldBounds(true);
+
+        // Get the worlds width and height
+        const worldWidth = this.map.widthInPixels * 2.0;
+        const worldHeight = this.map.heightInPixels * 2.0;
+        
+        // create map bounds
+        this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+
+        //create camera and follow player
+        this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+        this.cameras.main.startFollow(my.sprite.player, true, 0.08, 0.08);
+        this.cameras.main.setDeadzone(100, 50);
 
         this.knight = this.physics.add.sprite(200, 200, "knight");
         this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
