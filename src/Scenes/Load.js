@@ -20,6 +20,11 @@ class Load extends Phaser.Scene {
             frameHeight: 18
         });
 
+        this.load.spritesheet("tilemap_dungeonSheet", "tilemap_packed-dungeon.png", {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+
         this.load.image("knight", "knight.png");
         this.load.image("evilWizard", "evilWizard.png");
         this.load.image("orc", "orc.png");

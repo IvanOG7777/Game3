@@ -9,11 +9,11 @@
             "scaleInEditor": 1
         },
         "platformer-level-1.tmj": {
-            "scale": 1,
-            "selectedLayer": 2,
+            "scale": 1.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 289.5,
-                "y": 298
+                "x": 1626,
+                "y": 362.66666666666663
             }
         },
         "platformer-level-1.tmj#kenny_tilemap_background": {

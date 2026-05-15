@@ -105,10 +105,11 @@ function enemyShoot(scene, enemy) {
         potion.direction = -1;
     }
 
+    // TODO, fix not throwing propely
     if (distanceY < 0) {
         potion.velY = -300;
     } else {
-        potion.velY = -1000;
+        potion.velY = -100;
     }
 
     potion.velX = 350;

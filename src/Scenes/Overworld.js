@@ -56,6 +56,8 @@ class Overworld extends Phaser.Scene {
         let my = this.my;
 
         this.hitKey = this.input.keyboard.addKey('space');
+        this.equipKey = this.input.keyboard.addKey('E');
+        this.openKey = this.input.keyboard.addKey('F');
 
         this.map = this.add.tilemap("platformer-level-1");
 
@@ -108,6 +110,18 @@ class Overworld extends Phaser.Scene {
             repeat: -1
         });
 
+        this.anims.create({
+            key: 'chestAttack',
+            frames: [
+                {key: 'tilemap_dungeonSheet', frame: 89},
+                {key: 'tilemap_dungeonSheet', frame: 90},
+                {key: 'tilemap_dungeonSheet', frame: 91},
+                {key: 'tilemap_dungeonSheet', frame: 92},
+            ],
+            frameRate: 8,
+            repeat: -1
+        })
+
         // get coins from object layer
         this.coins = this.map.createFromObjects("Objects", {
             name: "coin",
@@ -115,11 +129,61 @@ class Overworld extends Phaser.Scene {
             frame: 151
         });
 
+        this.enemyChests = this.map.createFromObjects("Objects", {
+            name: "enemyChest",
+            key: "tilemap_dungeonSheet",
+            frame: 89
+        });
+
+        this.dagger = this.map.createFromObjects("Objects", {
+            name: "dagger",
+            key: "tilemap_dungeonSheet",
+            frame: 103
+        });
+
+        this.sword = this.map.createFromObjects("Objects", {
+            name: "sword",
+            key: "tilemap_dungeonSheet",
+            frame: 104
+        });
+
+        this.axe = this.map.createFromObjects("Objects", {
+            name: "axe",
+            key: "tilemap_dungeonSheet",
+            frame: 118
+        });
+
         // setting coin scale 
         for (let coin of this.coins) {
             coin.setScale(2.0);
             coin.x *= 2.0;
             coin.y *= 2.0;
+        }
+
+        //set scale
+        for (let enemyChest of this.enemyChests) {
+            enemyChest.setScale(2.0);
+            enemyChest.x *= 2.0;
+            enemyChest.y *= 2.0;
+            enemyChest.opened = false;
+        }
+
+        for (let dagger of this.dagger) {
+            dagger.setScale(2.0);
+            dagger.x *= 2.0;
+            dagger.y *= 2.0;
+        }
+        
+        for (let sword of this.sword) {
+            sword.setScale(2.0);
+            sword.x *= 2.0;
+            sword.y *= 2.0;
+        }
+
+        for (let axe of this.axe) {
+            axe.setScale(2.0);
+            axe.x *= 2.0;
+            axe.y *= 2.0;
         }
 
         for (let coin of this.coins) {
@@ -131,7 +195,8 @@ class Overworld extends Phaser.Scene {
 
 
         // set up player avatar
-        my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
+        // my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
+        my.sprite.player = this.physics.add.sprite(3700, 500, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
         my.sprite.player.setCollideWorldBounds(true);
 
         // add collision handler
@@ -144,17 +209,12 @@ class Overworld extends Phaser.Scene {
         const worldHeight = this.map.heightInPixels * 2.0;
 
         this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
-        this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
+        this.cameras.main.startFollow(my.sprite.player, true, 0.5, 0.5); // (target, [,roundPixels][,lerpX][,lerpY])
         this.cameras.main.setDeadzone(50, 50);
-        this.cameras.main.setZoom(1.25);
+        this.cameras.main.setZoom(2);
         
         // create map bounds
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
-
-        //create camera and follow player
-        this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
-        this.cameras.main.startFollow(my.sprite.player, true, 0.08, 0.08);
-        this.cameras.main.setDeadzone(100, 50);
 
         this.knight = this.physics.add.sprite(200, 200, "knight");
         this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
@@ -257,6 +317,23 @@ class Overworld extends Phaser.Scene {
         enemyMovement(this, this.evilWizardArray);
         // seperateEnemies(this.evilWizardArray);
         moveProjectile(this, deltaTime);
+
+        // loop through each chest
+        for (let chest of this.enemyChests) {
+            // get disntace from player to chest
+            let distanceFromChest = Phaser.Math.Distance.Between (my.sprite.player.x, my.sprite.player.y, chest.x, chest.y);
+
+            if (distanceFromChest < 50 && !chest.opened) {
+                chest.opened = true;
+                chest.anims.play("chestAttack");
+            }
+
+            if (distanceFromChest > 50 && chest.opened) {
+                chest.opened = false;
+                chest.anims.stop();
+                chest.setFrame(89);
+            }
+        }
         
     }
 }
