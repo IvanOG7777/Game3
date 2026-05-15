@@ -36,6 +36,8 @@ class Load extends Phaser.Scene {
         this.load.tilemapTiledJSON("platformer-level-1", "platformer-level-1.tmj");   // Tilemap in JSON
 
         this.load.bitmapFont("rocketSquare", "KennyRocketSquare_0.png", "KennyRocketSquare.fnt");
+
+        this.load.multiatlas("kenny-particles", "kenny-particles.json");
     }
 
     create() {

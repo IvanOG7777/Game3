@@ -6,27 +6,28 @@
     "fileStates": {
         "": {
             "scaleInDock": 1.5,
-            "scaleInEditor": 1
+            "scaleInEditor": 4
         },
         "platformer-level-1.tmj": {
-            "scale": 1.5,
-            "selectedLayer": 1,
+            "scale": 2,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1626,
-                "y": 362.66666666666663
+                "x": 36,
+                "y": 271.5
             }
         },
         "platformer-level-1.tmj#kenny_tilemap_background": {
             "scaleInDock": 1.5
         },
         "platformer-level-1.tmj#kenny_tilemap_dungeon": {
+            "scaleInDock": 1.5,
             "scaleInEditor": 1
         },
         "platformer-level-1.tmj#kenny_tilemap_farm": {
             "scaleInDock": 1
         },
         "platformer-level-1.tmj#kenny_tilemap_packed": {
-            "scaleInDock": 1
+            "scaleInDock": 1.5
         }
     },
     "last.imagePath": "C:/Users/elder/OneDrive/Desktop/CMPM120/Game3/assets",

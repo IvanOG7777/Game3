@@ -10,7 +10,7 @@ class Overworld extends Phaser.Scene {
     constructor() {
         super("platformerScene");
 
-        this.my = {sprite: {}};
+        this.my = {sprite: {}, vfx:{}};
         this.SCALE = 1.75;
 
         this.playerHealth = 100;
@@ -47,6 +47,7 @@ class Overworld extends Phaser.Scene {
         this.DRAG = 800;    // DRAG < ACCELERATION = icy slide
         this.physics.world.gravity.y = 1500;
         this.JUMP_VELOCITY = -700;
+        this.PARTICLE_VELOCITY = 50;
     }
 
     create() {
@@ -258,6 +259,7 @@ class Overworld extends Phaser.Scene {
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
+
         this.physics.add.collider(this.knight, this.groundLayer);
         this.physics.add.collider(this.evilWizard, this.groundLayer);
         this.physics.add.collider(this.orc, this.groundLayer);
@@ -270,6 +272,18 @@ class Overworld extends Phaser.Scene {
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
         }, this);
+
+        my.vfx.walking = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['smoke_03.png', 'smoke_09.png'],
+            random: true,
+            scale: {start: 0.03, end: 0.1},
+            maxAliveParticles: 8,
+            lifespan: 350,
+            gravityY: -400,
+            alpha: {start: 1, end: 0.1}, 
+        });
+
+        my.vfx.walking.stop();
 
         this.health = this.add.text(100, 50, "Health: " + this.playerHealth,
             {
@@ -290,17 +304,37 @@ class Overworld extends Phaser.Scene {
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
 
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+
+            my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+
+            if (my.sprite.player.body.blocked.down) {
+
+                my.vfx.walking.start();
+
+            }
+
         } else if(cursors.right.isDown) {
             my.sprite.player.body.setVelocityX(this.ACCELERATION);
 
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
 
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+
+            my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+
+            if (my.sprite.player.body.blocked.down) {
+
+                my.vfx.walking.start();
+
+            }
+
         } else {
             my.sprite.player.body.setVelocityX(0);
             my.sprite.player.body.setDragX(this.DRAG);
-
             my.sprite.player.anims.play('idle');
+            my.vfx.walking.stop();
         }
 
         // player jump
