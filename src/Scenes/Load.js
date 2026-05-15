@@ -14,6 +14,12 @@ class Load extends Phaser.Scene {
         this.load.image("tilemap_background", "tilemap-backgrounds_packed.png");
         this.load.image("tilemap_farm", "tilemap_packed-farm.png");
 
+        // load in sheet
+        this.load.spritesheet("tilemap_sheet", "tilemap_packed.png", {
+            frameWidth: 18,
+            frameHeight: 18
+        });
+
         this.load.image("knight", "knight.png");
         this.load.image("evilWizard", "evilWizard.png");
         this.load.image("orc", "orc.png");

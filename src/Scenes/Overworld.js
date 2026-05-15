@@ -97,13 +97,56 @@ class Overworld extends Phaser.Scene {
             collides: true
         })
 
+        // animation for coins
+        this.anims.create({
+            key: 'coinSpin',
+            frames: [
+                { key: 'tilemap_sheet', frame: 151 },
+                { key: 'tilemap_sheet', frame: 152 }
+            ],
+            frameRate: 6,
+            repeat: -1
+        });
+
+        // get coins from object layer
+        this.coins = this.map.createFromObjects("Objects", {
+            name: "coin",
+            key: "tilemap_sheet",
+            frame: 151
+        });
+
+        // setting coin scale 
+        for (let coin of this.coins) {
+            coin.setScale(2.0);
+            coin.x *= 2.0;
+            coin.y *= 2.0;
+        }
+
+        for (let coin of this.coins) {
+            coin.anims.play('coinSpin');
+        }
+
+        // turn into arcade physics
+        this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
+
+
         // set up player avatar
         my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
         my.sprite.player.setCollideWorldBounds(true);
 
+        // add collision handler
+        this.physics.add.overlap(my.sprite.player, this.coins, (player, coin) => {
+            coin.destroy();
+        });
+
         // Get the worlds width and height
         const worldWidth = this.map.widthInPixels * 2.0;
         const worldHeight = this.map.heightInPixels * 2.0;
+
+        this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+        this.cameras.main.startFollow(my.sprite.player, true, 0.25, 0.25); // (target, [,roundPixels][,lerpX][,lerpY])
+        this.cameras.main.setDeadzone(50, 50);
+        this.cameras.main.setZoom(1.25);
         
         // create map bounds
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
