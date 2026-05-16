@@ -343,19 +343,6 @@
                  "y":272.333333333333
                 }, 
                 {
-                 "gid":152,
-                 "height":18,
-                 "id":28,
-                 "name":"enemyChest",
-                 "opacity":1,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":18,
-                 "x":999,
-                 "y":546
-                }, 
-                {
                  "gid":422,
                  "height":16,
                  "id":29,
@@ -445,6 +432,58 @@
                  "width":16,
                  "x":1838,
                  "y":160.666666666667
+                }, 
+                {
+                 "gid":28,
+                 "height":18,
+                 "id":48,
+                 "name":"key",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":1945,
+                 "y":378
+                }, 
+                {
+                 "gid":28,
+                 "height":18,
+                 "id":49,
+                 "name":"key",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":2116,
+                 "y":33
+                }, 
+                {
+                 "gid":28,
+                 "height":18,
+                 "id":50,
+                 "name":"key",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":1226,
+                 "y":237
+                }, 
+                {
+                 "gid":28,
+                 "height":18,
+                 "id":51,
+                 "name":"key",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":18,
+                 "x":599,
+                 "y":458
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -453,7 +492,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":40,
+ "nextobjectid":52,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",

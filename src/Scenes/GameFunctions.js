@@ -45,7 +45,6 @@ function enemyMovement(scene, enemyArray) {
         }
 
         if (enemy.chase == true) {
-            console.log("wizard is chasing");
             if (absDistanceX > enemy.stopDistance) {
                 if (distanceX > 0) {
                     enemy.setVelocityX(enemy.speed);
@@ -60,7 +59,6 @@ function enemyMovement(scene, enemyArray) {
         }
 
          if (enemy.shoot == true) {
-            console.log("wizard is shooting");
             enemy.setVelocityX(0);
             if (distanceX > 0) {
                 enemy.setFlipX(false);
@@ -71,7 +69,6 @@ function enemyMovement(scene, enemyArray) {
         }
 
         if (enemy.wander == true) {
-            console.log("wizard is wandering");
             moveRandom (scene, enemy);
         }
 
@@ -190,6 +187,44 @@ function seperateEnemies(enemyArray) {
     }
 }
 
+// genertic spawner for wizzard for now
+function specificSpawnEnemies(scene, mobType, sections, amount) {
+    let enemies = []
+    for (let section of sections) {
+        for (let i = 0; i < amount; i++) {
+            let x = Phaser.Math.Between(section.x1, section.x2);
+            let y = Phaser.Math.Between(section.y1, section.y2);
+
+            let enemy = scene.physics.add.sprite(x, y, mobType);
+
+            enemy = scene.physics.add.sprite(x,y, mobType);
+
+            enemy.setScale(2.25);
+            enemy.setCollideWorldBounds(true);
+
+            enemy.health = 100;
+            enemy.isDead = false;
+            enemy.wander = false;
+            enemy.chase = false;
+            enemy.shoot = false;
+
+            enemy.stopDistance = 30;
+            enemy.shootDistance = scene.evilWizardShootDistance;
+            enemy.shootDelay = scene.evilWizardShootDelay;
+            enemy.wanderTimer = scene.enemyWanderTime;
+            enemy.nextWanderChange = 0;
+            enemy.nextShootTime = 0;
+            enemy.speed = 80;
+
+            scene.physics.add.collider(enemy, scene.groundLayer);
+
+            enemies.push(enemy);
+        }
+    }
+
+    return enemies;
+}
+
 function collides(a, b) {
         if (Math.abs(a.x - b.x) > (a.displayWidth / 2 + b.displayWidth / 2)) return false;
         if (Math.abs(a.y - b.y) > (a.displayHeight / 2 + b.displayHeight / 2)) return false;
@@ -203,5 +238,6 @@ export {
     enemyShoot,
     moveProjectile,
     hitEnemy,
-    seperateEnemies
+    seperateEnemies,
+    specificSpawnEnemies
 };

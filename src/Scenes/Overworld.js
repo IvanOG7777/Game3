@@ -3,7 +3,8 @@ import {
     enemyMovement,
     moveProjectile,
     hitEnemy,
-    seperateEnemies
+    seperateEnemies,
+    specificSpawnEnemies
 } from "./GameFunctions.js";
 
 class Overworld extends Phaser.Scene {
@@ -130,6 +131,12 @@ class Overworld extends Phaser.Scene {
             key: "tilemap_sheet",
             frame: 151
         });
+        
+        this.keys = this.map.createFromObjects("Objects", {
+            name: "key",
+            key: "tilemap_sheet",
+            frame: 27
+        });
 
         this.enemyChests = this.map.createFromObjects("Objects", {
             name: "enemyChest",
@@ -160,6 +167,12 @@ class Overworld extends Phaser.Scene {
             coin.setScale(2.0);
             coin.x *= 2.0;
             coin.y *= 2.0;
+        }
+
+        for (let key of this.keys) {
+            key.setScale(2.0);
+            key.x *= 2.0;
+            key.y *= 2.0;
         }
 
         //set scale
@@ -211,6 +224,7 @@ class Overworld extends Phaser.Scene {
 
         // turn into arcade physics
         this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
+        this.physics.world.enable(this.keys, Phaser.Physics.Arcade.STATIC_BODY);
 
 
         // set up player avatar
@@ -221,6 +235,10 @@ class Overworld extends Phaser.Scene {
         // add collision handler
         this.physics.add.overlap(my.sprite.player, this.coins, (player, coin) => {
             coin.destroy();
+        });
+
+        this.physics.add.overlap(my.sprite.player, this.keys, (player, key) => {
+            key.destroy();
         });
 
         // Get the worlds width and height
@@ -235,52 +253,33 @@ class Overworld extends Phaser.Scene {
         // create map bounds
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
 
-        this.knight = this.physics.add.sprite(200, 200, "knight");
-        this.evilWizard = this.physics.add.sprite(250, 250, "evilWizard");
-        this.orc = this.physics.add.sprite(300, 300, "orc");
+        let greenSpawns = [
+            { x1: 3840, y1: 51, x2: 4200, y2: 51 },
+            { x1: 3200, y1: 411, x2: 3500, y2: 411 },
+            { x1: 3940, y1: 519, x2: 3940, y2: 519 },
+            { x1: 3903, y1: 735, x2: 3903, y2: 735 }
+        ];
 
-        for (let i = 0; i < 5; i++) {
-            let distanceDiffernece = 20;
-            let wizard = this.physics.add.sprite(700 + distanceDiffernece * i, 900 + distanceDiffernece * i, "evilWizard");
-            
-            wizard.stopDistance = 30 + (i * 50);
-            wizard.shootDistance = this.evilWizardShootDistance + (i * 20);
-            wizard.shootDelay = this.evilWizardShootDelay + (i * 500);
-            wizard.wanderTimer = this.enemyWanderTime;
-            wizard.health = this.evilWizardHealth;
-            wizard.isDead = false;
-            wizard.wander = false;
-            wizard.chase = false;
-            wizard.shoot = false;
-
-            wizard.setScale(2.55);
-            wizard.setCollideWorldBounds(true);
-            wizard.speed = 80 + distanceDiffernece * i;
-            let direction = Phaser.Math.Between(0,1);
-            if (direction == 0) {
-                wizard.wanderDirection = -1;
-            } else {
-                wizard.wanderDirection = 1;
-            }
-
-            wizard.nextWanderChange = 0;
-            wizard.nextShootTime = 0;
-
-            this.physics.add.collider(wizard, this.groundLayer);
-
-            this.evilWizardArray.push(wizard);
-
-        }
-        this.knight.setScale(2.55);
-        this.evilWizard.setScale(2.55);
-        this.orc.setScale(2.55);
+        let desertSpawns = [
+            { x1: 2470, y1: 663, x2: 2470, y2: 663 },
+            { x1: 2207, y1: 555, x2: 2207, y2: 555 },
+            { x1: 2100, y1: 231, x2: 2100, y2: 231 }
+        ];
+        
+        let snowSpawns = [
+            { x1: 597, y1: 735, x2: 597, y2: 735 }
+        ];
+        
+        //chat
+        this.evilWizardArray.push(
+            ...specificSpawnEnemies(this, "evilWizard", greenSpawns, 1),
+            ...specificSpawnEnemies(this, "evilWizard", desertSpawns, 1),
+            ...specificSpawnEnemies(this, "evilWizard", snowSpawns, 1)
+        );
+        //end of chat
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
-
-        this.physics.add.collider(this.knight, this.groundLayer);
-        this.physics.add.collider(this.evilWizard, this.groundLayer);
-        this.physics.add.collider(this.orc, this.groundLayer);
 
         // set up Phaser-provided cursor key input
          this.cursors = this.input.keyboard.createCursorKeys();
@@ -315,6 +314,8 @@ class Overworld extends Phaser.Scene {
 
         let cursors = this.cursors;
         let my = this.my;
+
+        console.log (`Player coordinates: (${my.sprite.player.x}, ${my.sprite.player.y})` )
 
         this.nearWeapon = null;
         // loop through weapons
@@ -465,7 +466,7 @@ class Overworld extends Phaser.Scene {
             // get disntace from player to chest
             let distanceFromChest = Phaser.Math.Distance.Between (my.sprite.player.x, my.sprite.player.y, chest.x, chest.y);
 
-            if (distanceFromChest < 50 && !chest.opened) {
+            if (distanceFromChest < 800 && !chest.opened) {
                 chest.opened = true;
                 chest.anims.play("chestAttack");
             }
