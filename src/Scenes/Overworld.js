@@ -15,6 +15,7 @@ class Overworld extends Phaser.Scene {
 
         this.playerHealth = 100;
         this.playerHitDamage = 5;
+        this.currentWeapon;
 
 
         this.evilWizardHealth = 100;
@@ -191,6 +192,20 @@ class Overworld extends Phaser.Scene {
             coin.anims.play('coinSpin');
         }
 
+
+        // flaten and copy arrays into big weapons array
+        //CHAT
+        this.weapons = [
+            ...this.dagger,
+            ...this.sword,
+            ...this.axe
+        ];
+        //END OF CHAT
+
+        this.physics.world.enable(this.weapons, Phaser.Physics.Arcade.STATIC_BODY);
+        this.nearWeapon = null;
+        this.heldWeapon = null;
+
         // turn into arcade physics
         this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
 
@@ -212,7 +227,7 @@ class Overworld extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
         this.cameras.main.startFollow(my.sprite.player, true, 0.5, 0.5); // (target, [,roundPixels][,lerpX][,lerpY])
         this.cameras.main.setDeadzone(50, 50);
-        this.cameras.main.setZoom(2);
+        // this.cameras.main.setZoom(2);
         
         // create map bounds
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
@@ -298,6 +313,23 @@ class Overworld extends Phaser.Scene {
         let cursors = this.cursors;
         let my = this.my;
 
+        this.nearWeapon = null;
+        // loop through weapons
+        for (let weapon of this.weapons) {
+            // continue if we are already holding weapon
+            if (weapon === this.heldWeapon) continue;
+            if (!weapon.body.enable) continue;
+
+            // get distance between weapon and player
+            let dist = Phaser.Math.Distance.Between(my.sprite.player.x, my.sprite.player.y,weapon.x, weapon.y);
+            
+            // if dis is less than 40 we can equipd it
+            if (dist < 40) {
+                this.nearWeapon = weapon;
+                break;
+            }
+        }
+
         if(cursors.left.isDown) {
             my.sprite.player.body.setVelocityX(-this.ACCELERATION);
             
@@ -344,6 +376,51 @@ class Overworld extends Phaser.Scene {
         }
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.equipKey) && this.nearWeapon) {
+
+            let newWeapon = this.nearWeapon;
+            
+            if (this.heldWeapon) {
+                this.heldWeapon.body.enable = true;
+                this.heldWeapon.body.reset(this.heldWeapon.x, this.heldWeapon.y);
+            }
+            
+            this.heldWeapon = newWeapon;
+            this.heldWeapon.body.enable = false;
+
+            this.nearWeapon = null;
+
+            this.currentWeapon = this.heldWeapon.name;
+
+            // damage values
+            if (this.currentWeapon == "dagger") {
+                this.playerHitDamage = this.dagerDamage;
+            }
+
+            if (this.currentWeapon == "sword") {
+                this.playerHitDamage = this.swordDamage;
+            }
+
+            if (this.currentWeapon == "axe") {
+                this.playerHitDamage = this.axeDamage;
+            }
+
+            console.log("equipped:", this.currentWeapon);
+        }
+        
+        if (this.heldWeapon) {
+            
+            // if facing right
+            if (my.sprite.player.flipX == true) {
+                // facing left
+                this.heldWeapon.x = my.sprite.player.x + 25;
+                this.heldWeapon.y = my.sprite.player.y + 5;
+            } else {
+                this.heldWeapon.x = my.sprite.player.x - 25;
+                this.heldWeapon.y = my.sprite.player.y + 5;
+            }
         }
 
         this.evilWizardArray = hitEnemy(this, this.evilWizardArray);
