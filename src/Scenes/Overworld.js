@@ -41,6 +41,8 @@ class Overworld extends Phaser.Scene {
         this.evilWizardArray = [];
         this.spiderArray = [];
         this.orcArray = [];
+
+        this.keysCollected = 0;
     }
 
     init() {
@@ -228,8 +230,8 @@ class Overworld extends Phaser.Scene {
 
 
         // set up player avatar
-        // my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
-        my.sprite.player = this.physics.add.sprite(3700, 500, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
+        my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
+        // my.sprite.player = this.physics.add.sprite(3700, 500, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
         my.sprite.player.setCollideWorldBounds(true);
 
         // add collision handler
@@ -238,6 +240,7 @@ class Overworld extends Phaser.Scene {
         });
 
         this.physics.add.overlap(my.sprite.player, this.keys, (player, key) => {
+            this.keysCollected++;
             key.destroy();
         });
 
@@ -315,7 +318,7 @@ class Overworld extends Phaser.Scene {
         let cursors = this.cursors;
         let my = this.my;
 
-        console.log (`Player coordinates: (${my.sprite.player.x}, ${my.sprite.player.y})` )
+       console.log("Keys collected: ", this.keysCollected);
 
         this.nearWeapon = null;
         // loop through weapons

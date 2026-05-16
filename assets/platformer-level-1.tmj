@@ -382,19 +382,6 @@
                  "y":340
                 }, 
                 {
-                 "gid":422,
-                 "height":16,
-                 "id":32,
-                 "name":"enemyChest",
-                 "opacity":1,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":108,
-                 "y":264
-                }, 
-                {
                  "gid":436,
                  "height":16,
                  "id":36,
@@ -484,6 +471,19 @@
                  "width":18,
                  "x":599,
                  "y":458
+                }, 
+                {
+                 "gid":422,
+                 "height":16,
+                 "id":52,
+                 "name":"enemyChest",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":109,
+                 "y":269.333333333333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -492,7 +492,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":52,
+ "nextobjectid":53,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",

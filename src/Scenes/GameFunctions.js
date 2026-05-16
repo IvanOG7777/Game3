@@ -22,24 +22,24 @@ function moveRandom(scene, enemy) {
 function enemyMovement(scene, enemyArray) {
     for (let enemy of enemyArray) {
         let distanceX = scene.my.sprite.player.x - enemy.x;
-        let distanceY = scene.my.sprite.player.y - enemy.y;
         let playerX = scene.my.sprite.player.x
         let direction = 1;
 
         let absDistanceX = Math.abs(distanceX);
 
-        if (absDistanceX <= scene.evilWizardMeleeDistance) {
+        let totalDistance = Phaser.Math.Distance.Between (enemy.x, enemy.y, scene.my.sprite.player.x, scene.my.sprite.player.y);
+
+        if (totalDistance <= scene.evilWizardMeleeDistance) {
             enemy.attack = true;
-        } else if (absDistanceX <= scene.evilWizardFollowDistance) {
+        } else if (totalDistance <= scene.evilWizardFollowDistance) {
             enemy.chase = true;
-        } else if (absDistanceX <= enemy.shootDistance) {
+        } else if (totalDistance <= enemy.shootDistance) {
             enemy.shoot = true;
         } else {
             enemy.wander = true;
         }
 
         if (enemy.attack == true) {
-            console.log("wizard is meleeing");
             enemy.setVelocityX(0);
             direction *= -1;
         }
