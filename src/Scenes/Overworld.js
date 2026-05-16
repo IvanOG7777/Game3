@@ -168,6 +168,9 @@ class Overworld extends Phaser.Scene {
             enemyChest.x *= 2.0;
             enemyChest.y *= 2.0;
             enemyChest.opened = false;
+
+            enemyChest.health = 50;
+            enemyChest.isDead = false;
         }
 
         for (let dagger of this.dagger) {
@@ -423,7 +426,35 @@ class Overworld extends Phaser.Scene {
             }
         }
 
-        this.evilWizardArray = hitEnemy(this, this.evilWizardArray);
+        this.enemies = [
+            ...this.evilWizardArray,
+            ...this.enemyChests,
+            ...this.orcArray
+        ];
+        
+        if (Phaser.Input.Keyboard.JustDown(this.hitKey)) {
+            
+            for (let enemy of this.enemies) {
+                let distance = Phaser.Math.Distance.Between( my.sprite.player.x, my.sprite.player.y, enemy.x, enemy.y);
+                
+                if (distance < 100) {
+                    enemy.health -= this.playerHitDamage;
+                    
+                    if (enemy.health <= 0) {
+                        enemy.isDead = true;
+                        enemy.destroy();
+                    }
+                }
+            }
+        }
+        
+        // filter out the dead enemies
+        this.evilWizardArray = this.evilWizardArray.filter(enemy => !enemy.isDead);
+        this.enemyChests = this.enemyChests.filter(chest => !chest.isDead);
+        this.orcArray = this.orcArray.filter(orc => !orc.isDead);
+
+
+        // this.evilWizardArray = hitEnemy(this, this.evilWizardArray);
 
         enemyMovement(this, this.evilWizardArray);
         // seperateEnemies(this.evilWizardArray);
@@ -444,8 +475,8 @@ class Overworld extends Phaser.Scene {
                 chest.anims.stop();
                 chest.setFrame(89);
             }
+
         }
-        
     }
 }
 
