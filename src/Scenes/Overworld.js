@@ -17,6 +17,9 @@ class Overworld extends Phaser.Scene {
         this.playerHealth = 100;
         this.playerHitDamage = 5;
         this.currentWeapon;
+        this.nextPlayerHitTime = 0;
+        this.playerHitSpeed = 1000;
+    
 
 
         this.evilWizardHealth = 100;
@@ -24,25 +27,26 @@ class Overworld extends Phaser.Scene {
         this.evilWizardMeleeDistance = 30; // if player is 10 pixels away melee the player
         this.evilWizardFollowDistance = 275; // if player is within 200 pixels follow
         this.evilWizardShootDistance = 300; // if player is within 250 pixels shoot at them
-        this.evilWizardShootDelay = 3000;
+        this.evilWizardShootDelay = 2000;
         this.evilWizardPotionArray = [];
 
         this.enemyWanderTime = 1000;
 
         this.dagerDamage = 10;
-        this.dagerSpeed = 1000; // 1 second hit speed
+        this.dagerSpeed = 500; // 1.5 second hit speed
 
         this.swordDamage = 20;
-        this.swordSpeed = 2500; // 2.5 second hit speed
+        this.swordSpeed = 1800; // 2.5 second hit speed
 
         this.axeDamage = 30;
-        this.axeSpeed = 4000; // 4 second hit speed
+        this.axeSpeed = 3000; // 4 second hit speed
 
         this.evilWizardArray = [];
         this.spiderArray = [];
         this.orcArray = [];
 
         this.keysCollected = 0;
+        this.coinsCollected = 0;
     }
 
     init() {
@@ -59,6 +63,20 @@ class Overworld extends Phaser.Scene {
         // 45 tiles wide and 25 tiles tall.
 
         let my = this.my;
+
+        my.sounds = {};
+        my.sounds.footSteps = this.sound.add("footSteps", {loop: true});
+        my.sounds.potionThrow = this.sound.add("potionThrow");
+        my.sounds.potionImpact = this.sound.add("potionImpact")
+        my.sounds.jump = this.sound.add("jumpSound");
+        my.sounds.coinCollect = this.sound.add("coinCollect");
+        my.sounds.hurtSound = this.sound.add("hurtSound");
+        my.sounds.deathSound = this.sound.add("deathSound");
+        my.sounds.keyCollect = this.sound.add("keyCollect");
+        my.sounds.axeSound = this.sound.add("axeSound");
+        my.sounds.swordSound = this.sound.add("swordSound");
+        my.sounds.daggerSound = this.sound.add("daggerSound");
+        my.sounds.chompSound = this.sound.add("chompSound", {loop: true});
 
         this.hitKey = this.input.keyboard.addKey('space');
         this.equipKey = this.input.keyboard.addKey('E');
@@ -236,11 +254,18 @@ class Overworld extends Phaser.Scene {
 
         // add collision handler
         this.physics.add.overlap(my.sprite.player, this.coins, (player, coin) => {
+            my.sounds.coinCollect.play();
+            this.coinsCollected++;
+
+            this.coinsCollectedText.setText("Coins collected: " + this.coinsCollected);
             coin.destroy();
         });
 
         this.physics.add.overlap(my.sprite.player, this.keys, (player, key) => {
             this.keysCollected++;
+            my.sounds.keyCollect.play();
+
+            this.keysCollectedText.setText("Keys collected: " + this.keysCollected);
             key.destroy();
         });
 
@@ -309,8 +334,19 @@ class Overworld extends Phaser.Scene {
             {
                 fontSize: "30px",
                 fill: "#fd0000"
-            }).setOrigin(0.5);
+            }).setOrigin(0.5).setScrollFactor(0);
 
+        this.keysCollectedText = this.add.text(155, 100, "Keys collected: " + this.keysCollected,
+            {
+                fontSize: "30px",
+                fill: "#25a70b"
+            }).setOrigin(0.5).setScrollFactor(0);
+            
+        this.coinsCollectedText = this.add.text(162, 150, "Coins collected: " + this.coinsCollected,
+            {
+                fontSize: "30px",
+                fill: "#1e06f8"
+            }).setOrigin(0.5).setScrollFactor(0);
     }
 
     update(time, deltaTime) {
@@ -348,9 +384,10 @@ class Overworld extends Phaser.Scene {
             my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
 
             if (my.sprite.player.body.blocked.down) {
-
                 my.vfx.walking.start();
-
+                if (!my.sounds.footSteps.isPlaying) {
+                    my.sounds.footSteps.play();
+                }
             }
 
         } else if(cursors.right.isDown) {
@@ -364,9 +401,10 @@ class Overworld extends Phaser.Scene {
             my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
 
             if (my.sprite.player.body.blocked.down) {
-
                 my.vfx.walking.start();
-
+                if (!my.sounds.footSteps.isPlaying) {
+                    my.sounds.footSteps.play();
+                }
             }
 
         } else {
@@ -374,6 +412,7 @@ class Overworld extends Phaser.Scene {
             my.sprite.player.body.setDragX(this.DRAG);
             my.sprite.player.anims.play('idle');
             my.vfx.walking.stop();
+            my.sounds.footSteps.stop();
         }
 
         // player jump
@@ -383,6 +422,7 @@ class Overworld extends Phaser.Scene {
         }
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+            my.sounds.jump.play();
         }
 
         if (Phaser.Input.Keyboard.JustDown(this.equipKey) && this.nearWeapon) {
@@ -404,17 +444,21 @@ class Overworld extends Phaser.Scene {
             // damage values
             if (this.currentWeapon == "dagger") {
                 this.playerHitDamage = this.dagerDamage;
+                this.playerHitSpeed = this.dagerSpeed;
+                this.hitSound = my.sounds.daggerSound;
             }
 
             if (this.currentWeapon == "sword") {
                 this.playerHitDamage = this.swordDamage;
+                this.playerHitSpeed = this.swordSpeed;
+                this.hitSound = my.sounds.swordSound;
             }
 
             if (this.currentWeapon == "axe") {
                 this.playerHitDamage = this.axeDamage;
+                this.playerHitSpeed = this.axeSpeed;
+                this.hitSound = my.sounds.axeSound;
             }
-
-            console.log("equipped:", this.currentWeapon);
         }
         
         if (this.heldWeapon) {
@@ -436,7 +480,15 @@ class Overworld extends Phaser.Scene {
             ...this.orcArray
         ];
         
-        if (Phaser.Input.Keyboard.JustDown(this.hitKey)) {
+        if (Phaser.Input.Keyboard.JustDown(this.hitKey) && this.heldWeapon && time >= this.nextPlayerHitTime) {
+
+            // calculate next time
+            this.nextPlayerHitTime = time + this.playerHitSpeed;
+
+            // play sound
+            if (this.hitSound) {
+                this.hitSound.play();
+            }
             
             for (let enemy of this.enemies) {
                 let distance = Phaser.Math.Distance.Between( my.sprite.player.x, my.sprite.player.y, enemy.x, enemy.y);
@@ -471,11 +523,13 @@ class Overworld extends Phaser.Scene {
 
             if (distanceFromChest < 800 && !chest.opened) {
                 chest.opened = true;
+                my.sounds.chompSound.play();
                 chest.anims.play("chestAttack");
             }
 
             if (distanceFromChest > 50 && chest.opened) {
                 chest.opened = false;
+                my.sounds.chompSound.stop();
                 chest.anims.stop();
                 chest.setFrame(89);
             }

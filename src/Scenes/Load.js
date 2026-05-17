@@ -38,6 +38,20 @@ class Load extends Phaser.Scene {
         this.load.bitmapFont("rocketSquare", "KennyRocketSquare_0.png", "KennyRocketSquare.fnt");
 
         this.load.multiatlas("kenny-particles", "kenny-particles.json");
+
+        // Loading audios
+        this.load.audio("footSteps", "walking-fast-on-gravel.mp3");
+        this.load.audio("potionThrow", "impactPlate_light_000.ogg");
+        this.load.audio("coinCollect", "freesound_community-coin_c_02-102844.mp3");
+        this.load.audio("jumpSound", "freesound_community-jump_c_02-102843.mp3");
+        this.load.audio("potionImpact", "universfield-glass-bottle-breaking-351297.mp3");
+        this.load.audio("hurtSound", "freesound_community-young-man-being-hurt-95628.mp3");
+        this.load.audio("deathSound", "u_r7cny11q7r-man-death-scream-186763.mp3");
+        this.load.audio("keyCollect", "driken5482-retro-coin-1-236677.mp3");
+        this.load.audio("axeSound", "yodguard-giant-axe-impact-striking-into-dirt-2-450260.mp3");
+        this.load.audio("swordSound", "dragon-studio-armor-impact-from-sword-393843.mp3");
+        this.load.audio("daggerSound", "floraphonic-metal-blade-slice-53-200598.mp3");
+        this.load.audio("chompSound", "freesound_community-carrotnom-92106.mp3");
     }
 
     create() {

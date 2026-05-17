@@ -89,12 +89,14 @@ function enemyShoot(scene, enemy) {
     let playerX = scene.my.sprite.player.x
     let playerY = scene.my.sprite.player.y;
 
+    let distanceX = Math.abs(playerX - enemy.x);
     let distanceY = playerY - enemy.y;
 
     let potion = scene.physics.add.sprite(enemy.x, enemy.y, "redPotion");
     potion.setScale(2);
     potion.body.allowGravity = false;
     potion.isDead = false;
+    scene.my.sounds.potionThrow.play();
 
     if (playerX > enemy.x) {
         potion.direction = 1;
@@ -102,12 +104,19 @@ function enemyShoot(scene, enemy) {
         potion.direction = -1;
     }
 
-    // TODO, fix not throwing propely
+    // time to travel over horizontal distance
+    let travelTime = distanceX / 350;
+    let gravity = 700;
+
     if (distanceY < 0) {
-        potion.velY = -300;
+        //chat gpt formula
+        potion.velY = (distanceY - 0.5 * gravity * travelTime * travelTime) / travelTime;
     } else {
-        potion.velY = -100;
+        potion.velY = -300;
     }
+
+    // Clamping vel.y so it doenst launch so far
+    potion.velY = Phaser.Math.Clamp(potion.velY, -600, 200);
 
     potion.velX = 350;
 
@@ -118,8 +127,17 @@ function enemyShoot(scene, enemy) {
 function moveProjectile(scene, deltaTime) {
     for (let projectile of scene.evilWizardPotionArray) {
 
+        if (projectile.y >= scene.physics.world.bounds.height) {
+            scene.my.sounds.potionImpact.play();
+            projectile.isDead = true;
+            projectile.destroy();
+            continue;
+        }
+
         if(collides (scene.my.sprite.player, projectile) == true) {
             console.log("Player got hit with projectile");
+            scene.my.sounds.hurtSound.play()
+            scene.my.sounds.potionImpact.play();
             scene.playerHealth -= 10;
             scene.health.setText("Health: " + scene.playerHealth);
             projectile.isDead = true;
