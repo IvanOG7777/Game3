@@ -41,10 +41,10 @@ class Overworld extends Phaser.Scene {
         this.dagerSpeed = 500; // 1.5 second hit speed
 
         this.swordDamage = 20;
-        this.swordSpeed = 1800; // 2.5 second hit speed
+        this.swordSpeed = 1300; // 2.5 second hit speed
 
         this.axeDamage = 30;
-        this.axeSpeed = 3000; // 4 second hit speed
+        this.axeSpeed = 2000; // 4 second hit speed
 
         this.evilWizardArray = [];
         this.spiderArray = [];
@@ -211,6 +211,7 @@ class Overworld extends Phaser.Scene {
             enemyChest.health = 50;
             enemyChest.isDead = false;
             enemyChest.chomp = this.sound.add("chompSound", {loop: true});
+            enemyChest.nextChompTime = 0;
         }
 
         for (let dagger of this.dagger) {
@@ -575,15 +576,17 @@ class Overworld extends Phaser.Scene {
             // get disntace from player to chest
             let distanceFromChest = Phaser.Math.Distance.Between (my.sprite.player.x, my.sprite.player.y, chest.x, chest.y);
 
-            if (distanceFromChest < 800) {
-                if (!chest.opened) {
-                    chest.opened = true;
-                    chest.chomp.play();
-                    chest.anims.play("chestAttack");
-                }
+            if (distanceFromChest < 800 && !chest.opened) {
+                chest.opened = true;
+                chest.chomp.play();
+                chest.anims.play("chestAttack");
+            }
+
+            if (chest.opened && distanceFromChest < 50 && time >= chest.nextChompTime) {
                 this.playerHealth -= 0.5;
-                this.playerHealth = Math.max(0, this.playerHealth);
                 this.health.setText("Health: " + Math.ceil(this.playerHealth));
+                chest.nextChompTime = time + 1000;
+                this.my.sounds.hurtSound.play()
             }
 
             if (distanceFromChest > 50 && chest.opened) {
