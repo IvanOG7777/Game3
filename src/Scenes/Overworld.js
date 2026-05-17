@@ -19,7 +19,6 @@ class Overworld extends Phaser.Scene {
         this.currentWeapon;
         this.nextPlayerHitTime = 0;
         this.playerHitSpeed = 1000;
-    
 
 
         this.evilWizardHealth = 100;
@@ -29,6 +28,12 @@ class Overworld extends Phaser.Scene {
         this.evilWizardShootDistance = 300; // if player is within 250 pixels shoot at them
         this.evilWizardShootDelay = 2000;
         this.evilWizardPotionArray = [];
+
+        this.orcHealth = 50
+        this.orcMeleeDamage = 15;
+        this.orcFollowDistance = 300;
+        this.orcMeleeDelay = 1500
+        this.evilWizardShootDelay
 
         this.enemyWanderTime = 1000;
 
@@ -76,7 +81,8 @@ class Overworld extends Phaser.Scene {
         my.sounds.axeSound = this.sound.add("axeSound");
         my.sounds.swordSound = this.sound.add("swordSound");
         my.sounds.daggerSound = this.sound.add("daggerSound");
-        my.sounds.chompSound = this.sound.add("chompSound", {loop: true});
+        my.sounds.chestDeath = this.sound.add("chestDeath");
+        my.sounds.enemyDeath = this.sound.add("enemyDeath");
 
         this.hitKey = this.input.keyboard.addKey('space');
         this.equipKey = this.input.keyboard.addKey('E');
@@ -204,6 +210,7 @@ class Overworld extends Phaser.Scene {
 
             enemyChest.health = 50;
             enemyChest.isDead = false;
+            enemyChest.chomp = this.sound.add("chompSound", {loop: true});
         }
 
         for (let dagger of this.dagger) {
@@ -248,7 +255,7 @@ class Overworld extends Phaser.Scene {
 
 
         // set up player avatar
-        my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
+        my.sprite.player = this.physics.add.sprite(this.game.config.width/4, this.game.config.height/2, "vikingPlayer").setScale(2.25)
         // my.sprite.player = this.physics.add.sprite(3700, 500, "platformer_characters", "tile_0000.png").setScale(this.SCALE)
         my.sprite.player.setCollideWorldBounds(true);
 
@@ -282,8 +289,8 @@ class Overworld extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
 
         let greenSpawns = [
-            { x1: 3840, y1: 51, x2: 4200, y2: 51 },
-            { x1: 3200, y1: 411, x2: 3500, y2: 411 },
+            { x1: 3840, y1: 51, x2: 4200, y2: 51 }, // top of green tree
+            { x1: 3200, y1: 411, x2: 3500, y2: 411 }, // little tree and rope
             { x1: 3940, y1: 519, x2: 3940, y2: 519 },
             { x1: 3903, y1: 735, x2: 3903, y2: 735 }
         ];
@@ -302,9 +309,40 @@ class Overworld extends Phaser.Scene {
         this.evilWizardArray.push(
             ...specificSpawnEnemies(this, "evilWizard", greenSpawns, 1),
             ...specificSpawnEnemies(this, "evilWizard", desertSpawns, 1),
-            ...specificSpawnEnemies(this, "evilWizard", snowSpawns, 1)
+            ...specificSpawnEnemies(this, "evilWizard", snowSpawns, 1),
         );
         //end of chat
+
+        for (let i = 0; i < 15; i++) {
+            let randX = Phaser.Math.Between(0, worldWidth);
+            let randY = Phaser.Math.Between(820, worldHeight);
+
+            let orc = this.physics.add.sprite(randX, randY, "orc");
+
+            orc.setScale(2.25);
+            orc.setCollideWorldBounds(true);
+            
+            orc.health = this.orcHealth;
+            orc.isDead = false;
+            orc.wander = false;
+            orc.chase = false;
+            orc.shoot = false;
+
+            orc.stopDistance = 30;
+            orc.wanderTimer = this.enemyWanderTime;
+            orc.nextWanderChange = 0;
+            orc.nextShootTime = 0;
+            orc.meleeDelay = this.orcMeleeDelay
+            
+            orc.speed = 150
+            orc.meleeDistance = 40;
+            orc.followDistance = this.orcFollowDistance;
+            orc.nextMeleeTime = 0;
+
+            this.physics.add.collider(orc, this.groundLayer);
+
+            this.orcArray.push(orc);
+        }
 
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
@@ -351,10 +389,12 @@ class Overworld extends Phaser.Scene {
 
     update(time, deltaTime) {
 
+        console.log(`${this.my.sprite.player.x}, ${this.my.sprite.player.y}`)
+
         let cursors = this.cursors;
         let my = this.my;
 
-       console.log("Keys collected: ", this.keysCollected);
+        let grounded = my.sprite.player.body.blocked.down;
 
         this.nearWeapon = null;
         // loop through weapons
@@ -376,14 +416,13 @@ class Overworld extends Phaser.Scene {
         if(cursors.left.isDown) {
             my.sprite.player.body.setVelocityX(-this.ACCELERATION);
             
-            my.sprite.player.resetFlip();
-            my.sprite.player.anims.play('walk', true);
+            my.sprite.player.setFlip(true, false);
 
             my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
 
             my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
 
-            if (my.sprite.player.body.blocked.down) {
+            if (grounded) {
                 my.vfx.walking.start();
                 if (!my.sounds.footSteps.isPlaying) {
                     my.sounds.footSteps.play();
@@ -393,14 +432,13 @@ class Overworld extends Phaser.Scene {
         } else if(cursors.right.isDown) {
             my.sprite.player.body.setVelocityX(this.ACCELERATION);
 
-            my.sprite.player.setFlip(true, false);
-            my.sprite.player.anims.play('walk', true);
+            my.sprite.player.resetFlip();
 
             my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
 
             my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
 
-            if (my.sprite.player.body.blocked.down) {
+            if (grounded) {
                 my.vfx.walking.start();
                 if (!my.sounds.footSteps.isPlaying) {
                     my.sounds.footSteps.play();
@@ -410,15 +448,17 @@ class Overworld extends Phaser.Scene {
         } else {
             my.sprite.player.body.setVelocityX(0);
             my.sprite.player.body.setDragX(this.DRAG);
-            my.sprite.player.anims.play('idle');
             my.vfx.walking.stop();
+            my.sounds.footSteps.stop();
+        }
+
+        if (!grounded) {
             my.sounds.footSteps.stop();
         }
 
         // player jump
         // note that we need body.blocked rather than body.touching b/c the former applies to tilemap tiles and the latter to the "ground"
         if(!my.sprite.player.body.blocked.down) {
-            my.sprite.player.anims.play('jump');
         }
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
@@ -466,10 +506,10 @@ class Overworld extends Phaser.Scene {
             // if facing right
             if (my.sprite.player.flipX == true) {
                 // facing left
-                this.heldWeapon.x = my.sprite.player.x + 25;
+                this.heldWeapon.x = my.sprite.player.x - 25;
                 this.heldWeapon.y = my.sprite.player.y + 5;
             } else {
-                this.heldWeapon.x = my.sprite.player.x - 25;
+                this.heldWeapon.x = my.sprite.player.x + 25;
                 this.heldWeapon.y = my.sprite.player.y + 5;
             }
         }
@@ -495,8 +535,18 @@ class Overworld extends Phaser.Scene {
                 
                 if (distance < 100) {
                     enemy.health -= this.playerHitDamage;
+
+
                     
                     if (enemy.health <= 0) {
+                        if (enemy.chomp) {
+                            my.sounds.chestDeath.play();
+                            enemy.chomp.stop();
+                            enemy.chomp.destroy();
+                        } else {
+                            my.sounds.enemyDeath.play();
+                        }
+
                         enemy.isDead = true;
                         enemy.destroy();
                     }
@@ -513,23 +563,32 @@ class Overworld extends Phaser.Scene {
         // this.evilWizardArray = hitEnemy(this, this.evilWizardArray);
 
         enemyMovement(this, this.evilWizardArray);
+        enemyMovement(this, this.orcArray);
         // seperateEnemies(this.evilWizardArray);
         moveProjectile(this, deltaTime);
 
         // loop through each chest
         for (let chest of this.enemyChests) {
+
+            if (chest.isDead == true) continue;
+
             // get disntace from player to chest
             let distanceFromChest = Phaser.Math.Distance.Between (my.sprite.player.x, my.sprite.player.y, chest.x, chest.y);
 
-            if (distanceFromChest < 800 && !chest.opened) {
-                chest.opened = true;
-                my.sounds.chompSound.play();
-                chest.anims.play("chestAttack");
+            if (distanceFromChest < 800) {
+                if (!chest.opened) {
+                    chest.opened = true;
+                    chest.chomp.play();
+                    chest.anims.play("chestAttack");
+                }
+                this.playerHealth -= 0.5;
+                this.playerHealth = Math.max(0, this.playerHealth);
+                this.health.setText("Health: " + Math.ceil(this.playerHealth));
             }
 
             if (distanceFromChest > 50 && chest.opened) {
                 chest.opened = false;
-                my.sounds.chompSound.stop();
+                chest.chomp.stop();
                 chest.anims.stop();
                 chest.setFrame(89);
             }

@@ -29,11 +29,11 @@ function enemyMovement(scene, enemyArray) {
 
         let totalDistance = Phaser.Math.Distance.Between (enemy.x, enemy.y, scene.my.sprite.player.x, scene.my.sprite.player.y);
 
-        if (totalDistance <= scene.evilWizardMeleeDistance) {
+        if (totalDistance <= enemy.meleeDistance) {
             enemy.attack = true;
-        } else if (totalDistance <= scene.evilWizardFollowDistance) {
+        } else if (totalDistance <= enemy.followDistance) {
             enemy.chase = true;
-        } else if (totalDistance <= enemy.shootDistance) {
+        } else if (enemy.canShoot && totalDistance <= enemy.shootDistance) {
             enemy.shoot = true;
         } else {
             enemy.wander = true;
@@ -135,7 +135,6 @@ function moveProjectile(scene, deltaTime) {
         }
 
         if(collides (scene.my.sprite.player, projectile) == true) {
-            console.log("Player got hit with projectile");
             scene.my.sounds.hurtSound.play()
             scene.my.sounds.potionImpact.play();
             scene.playerHealth -= 10;
@@ -208,6 +207,7 @@ function seperateEnemies(enemyArray) {
 // genertic spawner for wizzard for now
 function specificSpawnEnemies(scene, mobType, sections, amount) {
     let enemies = []
+
     for (let section of sections) {
         for (let i = 0; i < amount; i++) {
             let x = Phaser.Math.Between(section.x1, section.x2);
@@ -220,19 +220,25 @@ function specificSpawnEnemies(scene, mobType, sections, amount) {
             enemy.setScale(2.25);
             enemy.setCollideWorldBounds(true);
 
-            enemy.health = 100;
             enemy.isDead = false;
             enemy.wander = false;
             enemy.chase = false;
             enemy.shoot = false;
 
             enemy.stopDistance = 30;
-            enemy.shootDistance = scene.evilWizardShootDistance;
-            enemy.shootDelay = scene.evilWizardShootDelay;
             enemy.wanderTimer = scene.enemyWanderTime;
             enemy.nextWanderChange = 0;
             enemy.nextShootTime = 0;
-            enemy.speed = 80;
+
+            if (mobType == "evilWizard") {
+                enemy.health = 100;
+                enemy.speed = 80;
+                enemy.meleeDistance = scene.evilWizardMeleeDistance;
+                enemy.followDistance = scene.evilWizardFollowDistance;
+                enemy.shootDistance = scene.evilWizardShootDistance;
+                enemy.shootDelay = scene.evilWizardShootDelay;
+                enemy.canShoot = true;
+            }
 
             scene.physics.add.collider(enemy, scene.groundLayer);
 

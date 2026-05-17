@@ -28,6 +28,7 @@ class Load extends Phaser.Scene {
         this.load.image("knight", "knight.png");
         this.load.image("evilWizard", "evilWizard.png");
         this.load.image("orc", "orc.png");
+        this.load.image("vikingPlayer", "vikingPlayer.png");
         
         // In game items
         this.load.image("redPotion", "wizardPotion.png");
@@ -52,6 +53,8 @@ class Load extends Phaser.Scene {
         this.load.audio("swordSound", "dragon-studio-armor-impact-from-sword-393843.mp3");
         this.load.audio("daggerSound", "floraphonic-metal-blade-slice-53-200598.mp3");
         this.load.audio("chompSound", "freesound_community-carrotnom-92106.mp3");
+        this.load.audio("chestDeath", "universfield-horror-bone-crack-352450.mp3");
+        this.load.audio("enemyDeath", "freesound_crunchpixstudio-female-character-death-vocal-10-408415.mp3");
     }
 
     create() {
