@@ -171,11 +171,9 @@ function hitEnemy(scene, enemyArray) {
     if (Phaser.Input.Keyboard.JustDown(scene.hitKey)) {
         for (let enemy of enemyArray) {
             if (collides(scene.my.sprite.player, enemy) == true) {
-                console.log("Meleeing enemy");
                 enemy.health -= scene.playerHitDamage;
 
                 if (enemy.health <= 0) {
-                    console.log("enemy is dead");
                     enemy.isDead = true;
                     enemy.destroy();
                 }

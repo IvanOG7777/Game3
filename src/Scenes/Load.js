@@ -56,39 +56,17 @@ class Load extends Phaser.Scene {
         this.load.audio("chompSound", "freesound_community-carrotnom-92106.mp3");
         this.load.audio("chestDeath", "universfield-horror-bone-crack-352450.mp3");
         this.load.audio("enemyDeath", "freesound_crunchpixstudio-female-character-death-vocal-10-408415.mp3");
+        
+        this.load.audio("music1", "1. Echoes of Valhalla.ogg");
+        this.load.audio("music2", "2. Northern Lights .ogg");
+        this.load.audio("music3", "3. Saga of the Sea Wolves.ogg");
+        this.load.audio("music4", "4. Frostbound Horizons.ogg");
+        this.load.audio("music5", "5. Odin's Whisper.ogg");
+        this.load.audio("music6", "6. Throne of the Fjords.ogg");
+
     }
 
     create() {
-        this.anims.create({
-            key: 'walk',
-            frames: this.anims.generateFrameNames('platformer_characters', {
-                prefix: "tile_",
-                start: 0,
-                end: 1,
-                suffix: ".png",
-                zeroPad: 4
-            }),
-            frameRate: 15,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'idle',
-            defaultTextureKey: "platformer_characters",
-            frames: [
-                { frame: "tile_0000.png" }
-            ],
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'jump',
-            defaultTextureKey: "platformer_characters",
-            frames: [
-                { frame: "tile_0001.png" }
-            ],
-        });
-
          // ...and pass to the next Scene
          this.scene.start("initScene");
     }

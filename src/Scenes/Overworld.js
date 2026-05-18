@@ -56,6 +56,7 @@ class Overworld extends Phaser.Scene {
 
         this.gameOver = false;
         this.gameWon = false;
+        this.playerAlive = true;
     }
 
     init() {
@@ -87,6 +88,25 @@ class Overworld extends Phaser.Scene {
         my.sounds.daggerSound = this.sound.add("daggerSound");
         my.sounds.chestDeath = this.sound.add("chestDeath");
         my.sounds.enemyDeath = this.sound.add("enemyDeath");
+        my.sounds.music;
+        
+        // chat
+        this.musicKeys = [
+            "music1",
+            "music2",
+            "music3",
+            "music4",
+            "music5"
+        ];
+
+        let randomMusic = Phaser.Utils.Array.GetRandom(this.musicKeys);
+        // end of chat
+        my.sounds.music = this.sound.add(randomMusic, {
+            loop: true,
+            volume: 0.4
+        });
+        
+        my.sounds.music.play();
 
         this.hitKey = this.input.keyboard.addKey('space');
         this.equipKey = this.input.keyboard.addKey('E');
@@ -163,7 +183,7 @@ class Overworld extends Phaser.Scene {
             frame: 151
         });
 
-        this.coinsToCollect = this.coins.length;
+        this.coinsToCollect = 1;
 
         this.keys = this.map.createFromObjects("Objects", {
             name: "key",
@@ -171,7 +191,7 @@ class Overworld extends Phaser.Scene {
             frame: 27
         });
 
-        this.keysToCollect = this.keys.length;
+        this.keysToCollect = 1;
 
         this.enemyChests = this.map.createFromObjects("Objects", {
             name: "enemyChest",
@@ -371,12 +391,6 @@ class Overworld extends Phaser.Scene {
             this.orcArray.push(orc);
         }
 
-        this.enemies = [
-            ...this.evilWizardArray,
-            ...this.enemyChests,
-            ...this.orcArray
-        ];
-
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
 
@@ -420,8 +434,68 @@ class Overworld extends Phaser.Scene {
             }).setOrigin(0.5).setScrollFactor(0);
     }
 
+    resetGameStateVariables() {
+            this.playerHealth = 100;
+            this.playerHitDamage = 5;
+            this.currentWeapon = null;
+            this.nextPlayerHitTime = 0;
+            this.playerHitSpeed = 1000;
+            this.playerAlive = true;
+
+            this.heartArray = [];
+            this.evilWizardPotionArray = [];
+            this.evilWizardArray = [];
+            this.spiderArray = [];
+            this.orcArray = [];
+            this.enemyChests = [];
+            this.enemies = [];
+
+            this.keysCollected = 0;
+            this.coinsCollected = 0;
+
+            this.heldWeapon = null;
+            this.nearWeapon = null;
+
+            this.endText = null;
+            this.resetText = null;
+
+            if (this.my?.sounds?.music) {
+                this.my.sounds.music.stop();
+            }
+
+            if (this.my?.sounds?.footSteps) this.my.sounds.footSteps.stop();
+        }
+
+        showEndScreen(message, color) {
+            if (!this.endText) {
+                this.endText = this.add.text(this.game.config.width / 2, this.game.config.height / 2 - 200, message, {
+                    fontSize: "50px",
+                    fill: color,
+                }).setOrigin(0.5).setScrollFactor(0);
+            }
+
+            if (!this.resetText) {
+                this.resetText = this.add.text(this.game.config.width / 2, this.game.config.height / 2 - 100, "Press R to Restart", {
+                    fontSize: "50px",
+                    fill: color,
+                }).setOrigin(0.5).setScrollFactor(0);
+            }
+            
+        }
+        
+        reset() {
+            if (Phaser.Input.Keyboard.JustDown(this.rKey)) {
+                if (this.my?.sounds?.music) {
+                    this.my.sounds.music.stop();
+                }
+                this.resetGameStateVariables();
+                this.scene.start("initScene");
+            }
+        }
+
     update(time, deltaTime) {
 
+        if (this.playerAlive == true) {
         console.log(`${this.my.sprite.player.x}, ${this.my.sprite.player.y}`)
 
         let cursors = this.cursors;
@@ -547,6 +621,12 @@ class Overworld extends Phaser.Scene {
             }
         }
 
+        this.enemies = [
+            ...this.evilWizardArray,
+            ...this.enemyChests,
+            ...this.orcArray
+        ];
+
         if (Phaser.Input.Keyboard.JustDown(this.hitKey) && this.heldWeapon && time >= this.nextPlayerHitTime) {
 
             // calculate next time
@@ -647,6 +727,30 @@ class Overworld extends Phaser.Scene {
                 chest.setFrame(89);
             }
 
+        }
+
+        if (this.playerHealth <= 0) {
+            
+            this.health.setText("Health: 0");
+            this.gameOver = true;
+            this.my.sounds.footSteps.stop();
+            this.my.sounds.deathSound.play();
+            this.my.sprite.player.setVisible(false);
+            this.my.sprite.player.body.enable = false;
+            this.my.sprite.player.setVelocity(0, 0);
+            this.cameras.main.stopFollow();
+            this.playerAlive = false;
+            this.showEndScreen("GAME OVER :(", "#ff002b");
+            return;
+        }
+        
+        if (this.keysCollected >= this.keysToCollect && this.coinsCollected >= this.coinsToCollect) {
+            this.playerAlive = false;
+            this.showEndScreen("YOU WIN! :)", "#1900ff");
+            return;
+            }
+        } else {
+            this.reset();
         }
     }
 }
