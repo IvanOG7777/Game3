@@ -437,12 +437,6 @@ class Overworld extends Phaser.Scene {
         // set up Phaser-provided cursor key input
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        // debug key listener (assigned to D key)
-        this.input.keyboard.on('keydown-D', () => {
-            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear()
-        }, this);
-
         my.vfx.walking = this.add.particles(0, 0, "kenny-particles", {
             frame: ['smoke_03.png', 'smoke_09.png'],
             random: true,
