@@ -2,7 +2,7 @@ import {
     moveRandom,
     enemyMovement,
     moveProjectile,
-    hitEnemy,
+    enemyMelee,
     seperateEnemies,
     specificSpawnEnemies
 } from "./GameFunctions.js";
@@ -23,18 +23,18 @@ class Overworld extends Phaser.Scene {
 
 
         this.evilWizardHealth = 100;
-        this.evilWizardDamage = 10;
         this.evilWizardMeleeDistance = 30; // if player is 10 pixels away melee the player
         this.evilWizardFollowDistance = 275; // if player is within 200 pixels follow
         this.evilWizardShootDistance = 300; // if player is within 250 pixels shoot at them
         this.evilWizardShootDelay = 2000;
         this.evilWizardPotionArray = [];
+        this.evilWizardMeleeDelay = 1200;
 
         this.orcHealth = 50
-        this.orcMeleeDamage = 15;
         this.orcFollowDistance = 300;
         this.orcMeleeDelay = 1500
-        this.evilWizardShootDelay
+
+        this.meleeDamage = 1;
 
         this.enemyWanderTime = 1000;
 
@@ -57,6 +57,10 @@ class Overworld extends Phaser.Scene {
         this.gameOver = false;
         this.gameWon = false;
         this.playerAlive = true;
+
+        this.waterDamage = 1;
+        this.waterDamageDelay = 1000;
+        this.nextWaterDamageTime = 0;
     }
 
     init() {
@@ -74,6 +78,7 @@ class Overworld extends Phaser.Scene {
 
         let my = this.my;
 
+        // Make sounds object
         my.sounds = {};
         my.sounds.footSteps = this.sound.add("footSteps", {loop: true});
         my.sounds.potionThrow = this.sound.add("potionThrow");
@@ -88,6 +93,11 @@ class Overworld extends Phaser.Scene {
         my.sounds.daggerSound = this.sound.add("daggerSound");
         my.sounds.chestDeath = this.sound.add("chestDeath");
         my.sounds.enemyDeath = this.sound.add("enemyDeath");
+        my.sounds.orcHitSound = this.sound.add("orcHitSound");
+        my.sounds.wizardHitSound = this.sound.add("wizardHitSound");
+        my.sounds.winSound = this.sound.add("winSound");
+        my.sounds.loseSound = this.sound.add("loseSound");
+        my.sounds.healthPickUp = this.sound.add("healthPickUp");
         my.sounds.music;
         
         // chat
@@ -98,16 +108,15 @@ class Overworld extends Phaser.Scene {
             "music4",
             "music5"
         ];
-
         let randomMusic = Phaser.Utils.Array.GetRandom(this.musicKeys);
         // end of chat
-        my.sounds.music = this.sound.add(randomMusic, {
-            loop: true,
-            volume: 0.4
-        });
+
+
+        my.sounds.music = this.sound.add(randomMusic, { loop: true, volume: 0.4 });
         
         my.sounds.music.play();
 
+        // init game keys
         this.hitKey = this.input.keyboard.addKey('space');
         this.equipKey = this.input.keyboard.addKey('E');
         this.openKey = this.input.keyboard.addKey('F');
@@ -137,6 +146,8 @@ class Overworld extends Phaser.Scene {
             [this.tileset, this.foreGroundTileset], 0, 0
         )
 
+
+        // scale the layers
         this.backGround.setScale(2.0);
         this.groundLayer.setScale(2.0);
         this.foreGround.setScale(2.0);
@@ -153,6 +164,28 @@ class Overworld extends Phaser.Scene {
             collides: true
         })
 
+        this.waterTiles = this.backGround.filterTiles(tile => {return tile.properties.water == true;});
+        let bubbleGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+        bubbleGraphics.fillStyle(0xffffff, 1);
+        bubbleGraphics.fillCircle(4, 4, 4);
+        bubbleGraphics.generateTexture("bubble", 8, 8);
+
+        for (let i = 0; i < this.waterTiles.length; i++) {
+            let tile = this.waterTiles[i];
+
+            this.add.particles(tile.getCenterX(), tile.getCenterY(), "bubble", {
+                lifespan: 1200,
+                speedY: { min: -20, max: -60 },
+                speedX: { min: -10, max: 10 },
+                scale: { start: 0.7, end: 0 },
+                alpha: { start: 0.8, end: 0 },
+                frequency: 800,
+                quantity: 1
+            });
+        }
+
+
+
         // animation for coins
         this.anims.create({
             key: 'coinSpin',
@@ -164,6 +197,7 @@ class Overworld extends Phaser.Scene {
             repeat: -1
         });
 
+        // animation for chests
         this.anims.create({
             key: 'chestAttack',
             frames: [
@@ -176,14 +210,15 @@ class Overworld extends Phaser.Scene {
             repeat: -1
         })
 
-        // get coins from object layer
+        ///////////////////////////////////////////////////
+        // Gets objects from object layer in tiled
         this.coins = this.map.createFromObjects("Objects", {
             name: "coin",
             key: "tilemap_sheet",
             frame: 151
         });
 
-        this.coinsToCollect = 1;
+        this.coinsToCollect = this.coins.length;
 
         this.keys = this.map.createFromObjects("Objects", {
             name: "key",
@@ -191,7 +226,7 @@ class Overworld extends Phaser.Scene {
             frame: 27
         });
 
-        this.keysToCollect = 1;
+        this.keysToCollect = this.keys.length;
 
         this.enemyChests = this.map.createFromObjects("Objects", {
             name: "enemyChest",
@@ -216,6 +251,7 @@ class Overworld extends Phaser.Scene {
             key: "tilemap_dungeonSheet",
             frame: 118
         });
+        /////////////////////////////////////////////////
 
         // setting coin scale 
         for (let coin of this.coins) {
@@ -230,7 +266,7 @@ class Overworld extends Phaser.Scene {
             key.y *= 2.0;
         }
 
-        //set scale
+        //set scale and other values
         for (let enemyChest of this.enemyChests) {
             enemyChest.setScale(2.0);
             enemyChest.x *= 2.0;
@@ -333,6 +369,7 @@ class Overworld extends Phaser.Scene {
         // create map bounds
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
 
+        // map to where to spawn wizards, locked means they can move from that area
         let greenSpawns = [
             {x1: 3840, y1: 51, x2: 4200, y2: 51, locked: true}, // top of green tree
             {x1: 3200, y1: 411, x2: 3500, y2: 411, locked: true}, // little tree and rope
@@ -360,6 +397,7 @@ class Overworld extends Phaser.Scene {
         );
         //end of chat
 
+        // Create orcs
         for (let i = 0; i < 10; i++) {
             let randX = Phaser.Math.Between(200, worldWidth);
             let randY = Phaser.Math.Between(820, worldHeight);
@@ -380,6 +418,8 @@ class Overworld extends Phaser.Scene {
             orc.nextWanderChange = 0;
             orc.nextShootTime = 0;
             orc.meleeDelay = this.orcMeleeDelay
+            orc.meleeDamage = this.meleeDamage;
+            orc.sound = my.sounds.orcHitSound;
 
             orc.speed = 150
             orc.meleeDistance = 40;
@@ -415,6 +455,7 @@ class Overworld extends Phaser.Scene {
 
         my.vfx.walking.stop();
 
+        // texts for health coins and keys
         this.health = this.add.text(100, 50, "Health: " + this.playerHealth,
             {
                 fontSize: "30px",
@@ -434,6 +475,7 @@ class Overworld extends Phaser.Scene {
             }).setOrigin(0.5).setScrollFactor(0);
     }
 
+    // functiom to reset to init
     resetGameStateVariables() {
             this.playerHealth = 100;
             this.playerHitDamage = 5;
@@ -466,6 +508,7 @@ class Overworld extends Phaser.Scene {
             if (this.my?.sounds?.footSteps) this.my.sounds.footSteps.stop();
         }
 
+        // function to show texts when game is won or lost
         showEndScreen(message, color) {
             if (!this.endText) {
                 this.endText = this.add.text(this.game.config.width / 2, this.game.config.height / 2 - 200, message, {
@@ -483,6 +526,7 @@ class Overworld extends Phaser.Scene {
             
         }
         
+        // function that call the above two when it runs
         reset() {
             if (Phaser.Input.Keyboard.JustDown(this.rKey)) {
                 if (this.my?.sounds?.music) {
@@ -495,11 +539,25 @@ class Overworld extends Phaser.Scene {
 
     update(time, deltaTime) {
 
+        // only play when player is alive
         if (this.playerAlive == true) {
-        console.log(`${this.my.sprite.player.x}, ${this.my.sprite.player.y}`)
 
         let cursors = this.cursors;
         let my = this.my;
+
+        let playerTile = this.backGround.getTileAtWorldXY(
+            my.sprite.player.x,
+            my.sprite.player.y,
+            true
+        );
+
+        if (playerTile && playerTile.properties.water == true && time >= this.nextWaterDamageTime) {
+            this.playerHealth -= this.waterDamage;
+            this.health.setText("Health: " + Math.ceil(this.playerHealth));
+            my.sounds.hurtSound.play();
+
+            this.nextWaterDamageTime = time + this.waterDamageDelay;
+        }
 
         let grounded = my.sprite.player.body.blocked.down;
 
@@ -572,6 +630,7 @@ class Overworld extends Phaser.Scene {
             my.sounds.jump.play();
         }
 
+        // when player is near a weapon and presses e
         if (Phaser.Input.Keyboard.JustDown(this.equipKey) && this.nearWeapon) {
 
             let newWeapon = this.nearWeapon;
@@ -588,6 +647,7 @@ class Overworld extends Phaser.Scene {
 
             this.currentWeapon = this.heldWeapon.name;
 
+            // set player damage to respective item
             // damage values
             if (this.currentWeapon == "dagger") {
                 this.playerHitDamage = this.dagerDamage;
@@ -621,12 +681,14 @@ class Overworld extends Phaser.Scene {
             }
         }
 
+        // create freash array of enemies per update
         this.enemies = [
             ...this.evilWizardArray,
             ...this.enemyChests,
             ...this.orcArray
         ];
 
+        // block used to hit an enemy
         if (Phaser.Input.Keyboard.JustDown(this.hitKey) && this.heldWeapon && time >= this.nextPlayerHitTime) {
 
             // calculate next time
@@ -672,6 +734,7 @@ class Overworld extends Phaser.Scene {
         this.enemyChests = this.enemyChests.filter(chest => !chest.isDead);
         this.orcArray = this.orcArray.filter(orc => !orc.isDead);
 
+        // loop to get heart from killed chest
         for (let heart of this.heartArray) {
             if (!heart.visible) continue;
             if (!heart.active) continue;
@@ -679,6 +742,7 @@ class Overworld extends Phaser.Scene {
             let distToHeart = Phaser.Math.Distance.Between(my.sprite.player.x, my.sprite.player.y, heart.x, heart.y);
 
             if (distToHeart < 40) {
+                my.sounds.healthPickUp.play();
                 this.playerHealth = Math.min(100, this.playerHealth + heart.giveHealth);
                 this.health.setText("Health: " + Math.ceil(this.playerHealth));
                 heart.setVisible(false);
@@ -690,13 +754,13 @@ class Overworld extends Phaser.Scene {
         this.heartArray = this.heartArray.filter(heart => heart.active);
 
 
-        // this.evilWizardArray = hitEnemy(this, this.evilWizardArray);
-
         enemyMovement(this, this.evilWizardArray);
         enemyMovement(this, this.orcArray);
-        seperateEnemies(this.evilWizardArray);
-        seperateEnemies(this.orcArray);
-        seperateEnemies([...this.evilWizardArray, ...this.orcArray]);
+        enemyMelee(this, this.evilWizardArray);
+        enemyMelee(this, this.orcArray);
+        seperateEnemies(this.evilWizardArray); //wizard on wizard seperation
+        seperateEnemies(this.orcArray); // orc on orc eperation
+        seperateEnemies([...this.evilWizardArray, ...this.orcArray]); //wizard on orc seperation
         moveProjectile(this, deltaTime);
 
         // loop through each chest
@@ -707,7 +771,7 @@ class Overworld extends Phaser.Scene {
             // get disntace from player to chest
             let distanceFromChest = Phaser.Math.Distance.Between(my.sprite.player.x, my.sprite.player.y, chest.x, chest.y);
 
-            if (distanceFromChest < 800 && !chest.opened) {
+            if (distanceFromChest < 200 && !chest.opened) {
                 chest.opened = true;
                 chest.chomp.play();
                 chest.anims.play("chestAttack");
@@ -740,12 +804,18 @@ class Overworld extends Phaser.Scene {
             this.my.sprite.player.setVelocity(0, 0);
             this.cameras.main.stopFollow();
             this.playerAlive = false;
+            my.vfx.walking.stop();
+            my.sounds.music.stop();
+            my.sounds.loseSound.play();
             this.showEndScreen("GAME OVER :(", "#ff002b");
             return;
         }
         
         if (this.keysCollected >= this.keysToCollect && this.coinsCollected >= this.coinsToCollect) {
             this.playerAlive = false;
+            my.vfx.walking.stop();
+            my.sounds.music.stop();
+            my.sounds.winSound.play();
             this.showEndScreen("YOU WIN! :)", "#1900ff");
             return;
             }

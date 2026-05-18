@@ -56,7 +56,12 @@ class Load extends Phaser.Scene {
         this.load.audio("chompSound", "freesound_community-carrotnom-92106.mp3");
         this.load.audio("chestDeath", "universfield-horror-bone-crack-352450.mp3");
         this.load.audio("enemyDeath", "freesound_crunchpixstudio-female-character-death-vocal-10-408415.mp3");
-        
+        this.load.audio("orcHitSound", "daviddumaisaudio-small-monster-attack-195712.mp3");
+        this.load.audio("wizardHitSound", "singularitysmarauder-magic_parry-301969.mp3");
+        this.load.audio("winSound", "xmersounds-soft-treble-win-fade-out-ending-sound-effect-416829.mp3");
+        this.load.audio("loseSound", "qbertapply-falled-sound-effect-278635.mp3");
+        this.load.audio("healthPickUp", "freesound_community-item-pick-up-38258.mp3");
+
         this.load.audio("music1", "1. Echoes of Valhalla.ogg");
         this.load.audio("music2", "2. Northern Lights .ogg");
         this.load.audio("music3", "3. Saga of the Sea Wolves.ogg");

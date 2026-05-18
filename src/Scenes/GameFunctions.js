@@ -149,7 +149,7 @@ function moveProjectile(scene, deltaTime) {
         }
 
         if (collides(scene.my.sprite.player, projectile) == true) {
-            scene.my.sounds.hurtSound.play()
+            scene.my.sounds.hurtSound.play();
             scene.my.sounds.potionImpact.play();
             scene.playerHealth -= 10;
             scene.health.setText("Health: " + scene.playerHealth);
@@ -167,32 +167,24 @@ function moveProjectile(scene, deltaTime) {
     scene.evilWizardPotionArray = scene.evilWizardPotionArray.filter(projectile => !projectile.isDead);
 }
 
-function hitEnemy(scene, enemyArray) {
-    if (Phaser.Input.Keyboard.JustDown(scene.hitKey)) {
-        for (let enemy of enemyArray) {
-            if (collides(scene.my.sprite.player, enemy) == true) {
-                enemy.health -= scene.playerHitDamage;
+function enemyMelee(scene, enemyArray) {
+    let currentTime = scene.time.now;
 
-                if (enemy.health <= 0) {
-                    enemy.isDead = true;
-                    enemy.destroy();
-                }
-            }
+    for (let enemy of enemyArray) {
+        
+        if (currentTime < enemy.nextMeleeTime) {
+            continue;
         }
 
-        enemyArray = enemyArray.filter(enemy => !enemy.isDead); // filter out dead enemies
+        if (collides(scene.my.sprite.player, enemy)) {
+            enemy.sound.play();
+            scene.playerHealth -= enemy.meleeDamage;
+            scene.my.sounds.hurtSound.play();
+            scene.health.setText("Health: " + scene.playerHealth);
 
-        // resetting the stop distances
-        let i = 0;
-        for (let enemy of enemyArray) {
-            enemy.stopDistance = 30 + (i * 50);
-            enemy.shootDistance = scene.evilWizardShootDistance + (i * 20);
-            enemy.shootDelay = scene.evilWizardShootDelay + (i * 200);
-            i++
+            enemy.nextMeleeTime = currentTime + enemy.meleeDelay;
         }
     }
-
-    return enemyArray;
 }
 
 function seperateEnemies(enemyArray) {
@@ -262,6 +254,10 @@ function specificSpawnEnemies(scene, mobType, sections, amount) {
                 enemy.shootDistance = scene.evilWizardShootDistance;
                 enemy.shootDelay = scene.evilWizardShootDelay;
                 enemy.canShoot = true;
+                enemy.meleeDamage = scene.meleeDamage;
+                enemy.sound = scene.my.sounds.wizardHitSound;
+                enemy.nextMeleeTime = 0;
+                enemy.meleeDelay = scene.evilWizardMeleeDelay;
             }
 
             scene.physics.add.collider(enemy, scene.groundLayer);
@@ -285,7 +281,7 @@ export {
     enemyMovement,
     enemyShoot,
     moveProjectile,
-    hitEnemy,
+    enemyMelee,
     seperateEnemies,
     specificSpawnEnemies
 };
