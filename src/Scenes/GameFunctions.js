@@ -3,7 +3,7 @@ function moveRandom(scene, enemy) {
     let currentTime = scene.time.now; // get current this time
 
     if (currentTime > enemy.nextWanderChange) {
-        let direction = Phaser.Math.Between(0,1); // pick direction
+        let direction = Phaser.Math.Between(0, 1); // pick direction
         if (direction == 0) { // if 0 
             enemy.wanderDirection = -1; // make left dirrection
         } else {
@@ -27,7 +27,7 @@ function enemyMovement(scene, enemyArray) {
 
         let absDistanceX = Math.abs(distanceX);
 
-        let totalDistance = Phaser.Math.Distance.Between (enemy.x, enemy.y, scene.my.sprite.player.x, scene.my.sprite.player.y);
+        let totalDistance = Phaser.Math.Distance.Between(enemy.x, enemy.y, scene.my.sprite.player.x, scene.my.sprite.player.y);
 
         if (totalDistance <= enemy.meleeDistance) {
             enemy.attack = true;
@@ -58,7 +58,7 @@ function enemyMovement(scene, enemyArray) {
             }
         }
 
-         if (enemy.shoot == true) {
+        if (enemy.shoot == true) {
             enemy.setVelocityX(0);
             if (distanceX > 0) {
                 enemy.setFlipX(false);
@@ -69,7 +69,21 @@ function enemyMovement(scene, enemyArray) {
         }
 
         if (enemy.wander == true) {
-            moveRandom (scene, enemy);
+            moveRandom(scene, enemy);
+        }
+
+        if (enemy.locked) {
+            enemy.x = Phaser.Math.Clamp(enemy.x, enemy.minX, enemy.maxX);
+
+            if (enemy.x <= enemy.minX && enemy.body.velocity.x < 0) {
+                enemy.setVelocityX(enemy.speed);
+                enemy.wanderDirection = 1;
+            }
+
+            if (enemy.x >= enemy.maxX && enemy.body.velocity.x > 0) {
+                enemy.setVelocityX(-enemy.speed);
+                enemy.wanderDirection = -1;
+            }
         }
 
         enemy.wander = false;
@@ -134,7 +148,7 @@ function moveProjectile(scene, deltaTime) {
             continue;
         }
 
-        if(collides (scene.my.sprite.player, projectile) == true) {
+        if (collides(scene.my.sprite.player, projectile) == true) {
             scene.my.sounds.hurtSound.play()
             scene.my.sounds.potionImpact.play();
             scene.playerHealth -= 10;
@@ -184,20 +198,26 @@ function hitEnemy(scene, enemyArray) {
 }
 
 function seperateEnemies(enemyArray) {
-    let pushAmount = 0.5
+    let pushAmount = 3;
+    let minDistance = 60;
+
     for (let enemyA of enemyArray) {
         for (let enemyB of enemyArray) {
+
+            if (enemyA === enemyB) continue;
+
             if (enemyA != enemyB) {
-                let distanceX = Math.abs(enemyA.x - enemyB.x);
-                
-                if (distanceX <= 50) {
-                    if (enemyA.x < enemyB.x) {
-                        enemyA.x -= pushAmount
-                        enemyB.x += pushAmount
-                    } else {
-                        enemyA.x += pushAmount;
-                        enemyB.x -= pushAmount
-                    }
+                let distanceX = enemyA.x - enemyB.x;
+                let distanceY = enemyA.y - enemyB.y;
+
+                let totalDistance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+                if (totalDistance < minDistance && totalDistance > 0) {
+                    let overlap = (minDistance - totalDistance) / minDistance;
+                    let pushX = (distanceX / totalDistance) * overlap * 5;
+
+                    enemyA.x += pushX;
+                    enemyB.x -= pushX;
                 }
             }
         }
@@ -215,10 +235,16 @@ function specificSpawnEnemies(scene, mobType, sections, amount) {
 
             let enemy = scene.physics.add.sprite(x, y, mobType);
 
-            enemy = scene.physics.add.sprite(x,y, mobType);
+            enemy.locked = section.locked;
 
             enemy.setScale(2.25);
             enemy.setCollideWorldBounds(true);
+
+            // keep within bound only
+            if (enemy.locked) {
+                enemy.minX = Math.min(section.x1, section.x2);
+                enemy.maxX = Math.max(section.x1, section.x2);
+            }
 
             enemy.isDead = false;
             enemy.wander = false;
@@ -250,10 +276,10 @@ function specificSpawnEnemies(scene, mobType, sections, amount) {
 }
 
 function collides(a, b) {
-        if (Math.abs(a.x - b.x) > (a.displayWidth / 2 + b.displayWidth / 2)) return false;
-        if (Math.abs(a.y - b.y) > (a.displayHeight / 2 + b.displayHeight / 2)) return false;
-        return true;
-    }
+    if (Math.abs(a.x - b.x) > (a.displayWidth / 2 + b.displayWidth / 2)) return false;
+    if (Math.abs(a.y - b.y) > (a.displayHeight / 2 + b.displayHeight / 2)) return false;
+    return true;
+}
 
 
 export {

@@ -29,6 +29,7 @@ class Load extends Phaser.Scene {
         this.load.image("evilWizard", "evilWizard.png");
         this.load.image("orc", "orc.png");
         this.load.image("vikingPlayer", "vikingPlayer.png");
+        this.load.image("heart", "heart.png");
         
         // In game items
         this.load.image("redPotion", "wizardPotion.png");
